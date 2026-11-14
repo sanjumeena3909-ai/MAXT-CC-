@@ -844,37 +844,6 @@
       color: var(--text-muted);
     }
 
-    /* Settings Gear */
-    .settings-gear {
-      position: fixed;
-      right: max(16px, env(safe-area-inset-right, 16px));
-      bottom: max(16px, env(safe-area-inset-bottom, 16px));
-      z-index: 9;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(18, 22, 20, 0.72);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-      transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-    }
-
-    .settings-gear:hover {
-      border-color: var(--neon);
-      color: var(--neon);
-    }
-
-    .settings-gear svg {
-      width: 20px;
-      height: 20px;
-    }
-
     /* === 5. EDIT PANEL === */
     .edit-backdrop {
       position: fixed;
@@ -1698,14 +1667,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Layer 9: Settings Gear -->
-  <button id="settings-gear" type="button" class="settings-gear" aria-label="Open settings" aria-haspopup="dialog" aria-expanded="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-    </svg>
-  </button>
 
   <!-- PIN Unlock Modal -->
   <div id="pin-backdrop" class="edit-backdrop" hidden>
@@ -3434,7 +3395,6 @@
 
       const backdrop = document.getElementById("edit-backdrop");
       const panel = document.getElementById("edit-panel");
-      const gearBtn = document.getElementById("settings-gear");
       const closeBtn = document.getElementById("edit-close-btn");
       const exitBtn = document.getElementById("exit-edit-btn");
       const saveBtn = document.getElementById("save-settings-btn");
@@ -3725,7 +3685,6 @@
         syncControlsFromSettings(draftSettings);
         backdrop.hidden = false;
         isOpen = true;
-        gearBtn.setAttribute("aria-expanded", "true");
         updateBgPreviewCard();
         closeBtn.focus();
 
@@ -3755,7 +3714,6 @@
         isOpen = false;
         isDirty = false;
         confirmBar.hidden = true;
-        gearBtn.setAttribute("aria-expanded", "false");
         if (lastFocusedEl && typeof lastFocusedEl.focus === "function") {
           lastFocusedEl.focus();
         }
@@ -4723,8 +4681,6 @@
             showToast("Could not copy URL automatically.", true);
           }
         });
-
-        document.getElementById("settings-gear").addEventListener("click", requestOpenEditMode);
 
         // PIN dialog handlers
         document.getElementById("pin-unlock-cancel").addEventListener("click", () => {
