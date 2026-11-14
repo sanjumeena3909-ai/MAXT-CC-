@@ -103,6 +103,7 @@ function loadIndexModules() {
     };
     ImageTools: {
       detectSignature: (bytes: Uint8Array) => string | null;
+      validateImageFile: (file: any) => Promise<{ valid: boolean; error: string; format?: string }>;
     };
     Countdown: {
       CIRCUMFERENCE: number;
@@ -233,4 +234,38 @@ test('Countdown.computeDisplay accurately converts remaining ms to seconds and d
   const done = mods.Countdown.computeDisplay(0, 5000);
   assert.equal(done.secondsLeft, 0);
   assert.ok(Math.abs(done.offset - mods.Countdown.CIRCUMFERENCE) < 0.01);
+});
+
+test('ImageTools.validateImageFile handles valid formats, mobile gallery URIs, >15MB, and spoofs', async () => {
+  const makeFakeFile = (name: string, type: string, bytes: Uint8Array, sizeOverride?: number) => ({
+    name,
+    type,
+    size: sizeOverride ?? bytes.length,
+    slice: (start: number, end: number) => ({
+      arrayBuffer: async () => bytes.slice(start, end).buffer
+    })
+  });
+
+  const jpegBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const pngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+  const webpBytes = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
+  const svgBytes = new Uint8Array([0x3c, 0x73, 0x76, 0x67, 0x3e, 0, 0, 0, 0, 0, 0, 0]);
+
+  // Valid JPG, JPEG alias MIME, PNG, WebP
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('photo.jpg', 'image/jpg', jpegBytes))).valid, true);
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('photo.png', 'image/png', pngBytes))).valid, true);
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('photo.webp', 'image/webp', webpBytes))).valid, true);
+
+  // Mobile gallery URI without extension or MIME (relies on magic bytes)
+  const mobileUri = await mods.ImageTools.validateImageFile(makeFakeFile('1000048219', '', jpegBytes));
+  assert.equal(mobileUri.valid, true);
+  assert.equal(mobileUri.format, 'jpeg');
+
+  // Empty file & >15 MB file
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('empty.jpg', 'image/jpeg', new Uint8Array(0)))).valid, false);
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('huge.jpg', 'image/jpeg', jpegBytes, 15 * 1024 * 1024 + 1))).valid, false);
+
+  // Unsupported format & magic byte spoof
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('doc.pdf', 'application/pdf', svgBytes))).valid, false);
+  assert.equal((await mods.ImageTools.validateImageFile(makeFakeFile('fake.png', 'image/png', svgBytes))).valid, false);
 });

@@ -980,6 +980,8 @@
     .edit-body {
       padding: 16px 18px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -1039,9 +1041,10 @@
 
     .range-input {
       width: 100%;
-      height: 36px;
+      height: 44px;
       accent-color: var(--neon);
       cursor: pointer;
+      touch-action: pan-y;
     }
 
     .toggle-row {
@@ -1117,6 +1120,116 @@
       margin: 0;
       font-size: 0.78rem;
       color: var(--text-muted);
+    }
+
+    .bg-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--neon);
+      padding: 4px 8px;
+    }
+
+    .bg-spinner {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 255, 117, 0.25);
+      border-top-color: var(--neon);
+      animation: bgSpin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes bgSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .bg-preview-card {
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.38);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bg-preview-frame {
+      position: relative;
+      width: 100%;
+      height: 112px;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: var(--bg);
+      border: 1px solid rgba(0, 255, 117, 0.25);
+    }
+
+    .bg-preview-layer {
+      position: absolute;
+      inset: -12px;
+      background-size: cover;
+      background-position: 50% 50%;
+      background-repeat: no-repeat;
+      transform-origin: center center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .bg-preview-layer.has-image {
+      opacity: 1;
+    }
+
+    .bg-preview-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(5, 8, 6, 0.55);
+      pointer-events: none;
+    }
+
+    .bg-preview-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .bg-preview-meta {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      word-break: break-word;
+    }
+
+    .zoom-control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .zoom-step-btn {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .zoom-step-btn:hover {
+      border-color: var(--neon);
+      color: var(--neon);
     }
 
     .color-row {
@@ -1638,14 +1751,31 @@
         <!-- Tab 1: Background -->
         <div id="pane-bg" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-bg">
           <div id="bg-dropzone" class="dropzone">
-            <input id="bg-file-input" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only">
+            <input id="bg-file-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" class="sr-only">
             <button id="bg-upload-btn" type="button" class="btn btn-ghost">Upload Background Image</button>
-            <p class="dropzone-hint">Drag &amp; drop or choose JPEG, PNG, or WebP (max 15 MB). Stored locally.</p>
+            <p class="dropzone-hint">Tap to open photo gallery or drag &amp; drop JPG, JPEG, PNG, or WebP (max 15 MB).</p>
+            <div id="bg-loading-box" class="bg-loading" role="status" aria-live="polite" hidden>
+              <span class="bg-spinner" aria-hidden="true"></span>
+              <span>Processing image...</span>
+            </div>
+          </div>
+
+          <p id="bg-error-msg" class="validation-msg is-error" role="alert" hidden></p>
+
+          <div id="bg-preview-card" class="bg-preview-card">
+            <div id="bg-preview-frame" class="bg-preview-frame">
+              <div id="bg-preview-layer" class="bg-preview-layer"></div>
+              <div id="bg-preview-overlay" class="bg-preview-overlay"></div>
+              <div id="bg-preview-empty" class="bg-preview-empty" hidden>No background image</div>
+            </div>
+            <p id="bg-preview-meta" class="bg-preview-meta">Default backdrop active.</p>
+            <button id="bg-apply-btn" type="button" class="btn btn-ghost">Apply Background</button>
           </div>
 
           <div class="inline-actions">
             <button id="bg-replace-btn" type="button" class="btn btn-secondary">Replace image</button>
-            <button id="bg-reset-adj-btn" type="button" class="btn btn-secondary">Reset adjustments</button>
+            <button id="bg-reset-adj-btn" type="button" class="btn btn-secondary">Reset image</button>
+            <button id="bg-restore-default-btn" type="button" class="btn btn-secondary">Restore default</button>
             <button id="bg-remove-btn" type="button" class="btn btn-danger">Remove background</button>
           </div>
 
@@ -1654,7 +1784,11 @@
               <span>Zoom</span>
               <span id="val-bg-zoom" class="field-value">100%</span>
             </label>
-            <input id="slider-bg-zoom" type="range" min="100" max="300" step="1" class="range-input">
+            <div class="zoom-control-row">
+              <button id="bg-zoom-out-btn" type="button" class="zoom-step-btn" aria-label="Zoom out">−</button>
+              <input id="slider-bg-zoom" type="range" min="100" max="300" step="1" class="range-input">
+              <button id="bg-zoom-in-btn" type="button" class="zoom-step-btn" aria-label="Zoom in">+</button>
+            </div>
           </div>
 
           <div class="field-group">
@@ -1777,7 +1911,7 @@
 
           <div class="field-group">
             <span class="field-label-row"><span>Logo / Profile Image (square crop, max 512px)</span></span>
-            <input id="logo-file-input" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only">
+            <input id="logo-file-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" class="sr-only">
             <div class="inline-actions">
               <button id="logo-upload-btn" type="button" class="btn btn-ghost">Upload Logo</button>
               <button id="logo-remove-btn" type="button" class="btn btn-danger">Remove logo</button>
@@ -1894,8 +2028,8 @@
           </div>
         </div>
         <div class="edit-footer-row">
-          <button id="save-settings-btn" type="button" class="btn btn-ghost">Save Settings</button>
-          <button id="exit-edit-btn" type="button" class="btn btn-secondary">Exit Edit Mode</button>
+          <button id="save-settings-btn" type="button" class="btn btn-ghost">Save Changes</button>
+          <button id="exit-edit-btn" type="button" class="btn btn-secondary">Cancel</button>
         </div>
         <button id="reset-settings-footer-btn" type="button" class="btn btn-danger">Reset Settings</button>
       </div>
@@ -2276,10 +2410,17 @@
               }
             };
             req.onsuccess = function () {
-              resolve(req.result);
+              const db = req.result;
+              db.onversionchange = function () {
+                db.close();
+              };
+              resolve(db);
             };
             req.onerror = function () {
               reject(req.error || new Error("IndexedDB open failed"));
+            };
+            req.onblocked = function () {
+              reject(new Error("IndexedDB open blocked by another tab"));
             };
           } catch (err) {
             reject(err);
@@ -2289,20 +2430,57 @@
 
       /**
        * Stores a Blob under key ("background" or "logo") in IndexedDB.
+       * Falls back to ArrayBuffer wrapper if a browser rejects direct Blob cloning.
        * @param {string} key - Store key.
        * @param {Blob} blob - Image blob.
        * @returns {Promise<boolean>} Success flag.
        */
       async function saveImageBlob(key, blob) {
+        if (!(blob instanceof Blob) || blob.size === 0) {
+          return false;
+        }
+        let db = null;
         try {
-          const db = await openDb();
-          return await new Promise((resolve) => {
-            const tx = db.transaction(DB_STORE, "readwrite");
-            tx.objectStore(DB_STORE).put(blob, key);
-            tx.oncomplete = () => { db.close(); resolve(true); };
-            tx.onerror = () => { db.close(); resolve(false); };
+          db = await openDb();
+          const saved = await new Promise((resolve) => {
+            try {
+              const tx = db.transaction(DB_STORE, "readwrite");
+              tx.objectStore(DB_STORE).put(blob, key);
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+              tx.onabort = () => resolve(false);
+            } catch (cloneErr) {
+              resolve(null);
+            }
           });
+          if (saved === true) {
+            db.close();
+            return true;
+          }
+          if (saved === null) {
+            // Fallback for older mobile WebKit builds that throw DataCloneError on Blob
+            const buf = await blob.arrayBuffer();
+            const fallbackRes = await new Promise((resolve) => {
+              try {
+                const tx = db.transaction(DB_STORE, "readwrite");
+                tx.objectStore(DB_STORE).put({ __blobData: buf, type: blob.type || "image/jpeg" }, key);
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => resolve(false);
+                tx.onabort = () => resolve(false);
+              } catch (err) {
+                resolve(false);
+              }
+            });
+            db.close();
+            return fallbackRes;
+          }
+          db.close();
+          warnStorage("Failed to save image in browser storage (quota exceeded or blocked).");
+          return false;
         } catch (err) {
+          if (db) {
+            try { db.close(); } catch (closeErr) { /* ignore */ }
+          }
           warnStorage("Image persistence unavailable in this browser mode.");
           return false;
         }
@@ -2314,15 +2492,30 @@
        * @returns {Promise<Blob|null>} Stored blob or null.
        */
       async function loadImageBlob(key) {
+        let db = null;
         try {
-          const db = await openDb();
-          return await new Promise((resolve) => {
+          db = await openDb();
+          const result = await new Promise((resolve) => {
             const tx = db.transaction(DB_STORE, "readonly");
             const req = tx.objectStore(DB_STORE).get(key);
-            req.onsuccess = () => { db.close(); resolve(req.result || null); };
-            req.onerror = () => { db.close(); resolve(null); };
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => resolve(null);
+            tx.onabort = () => resolve(null);
           });
+          db.close();
+          if (!result) return null;
+          if (result instanceof Blob) {
+            return result.size > 0 ? result : null;
+          }
+          if (result && result.__blobData) {
+            const reconstructed = new Blob([result.__blobData], { type: result.type || "image/jpeg" });
+            return reconstructed.size > 0 ? reconstructed : null;
+          }
+          return null;
         } catch (err) {
+          if (db) {
+            try { db.close(); } catch (closeErr) { /* ignore */ }
+          }
           return null;
         }
       }
@@ -2330,19 +2523,26 @@
       /**
        * Deletes a stored image blob from IndexedDB.
        * @param {string} key - Store key.
-       * @returns {Promise<void>}
+       * @returns {Promise<boolean>} True if deleted or store absent.
        */
       async function deleteImageBlob(key) {
+        let db = null;
         try {
-          const db = await openDb();
-          await new Promise((resolve) => {
+          db = await openDb();
+          const ok = await new Promise((resolve) => {
             const tx = db.transaction(DB_STORE, "readwrite");
             tx.objectStore(DB_STORE).delete(key);
-            tx.oncomplete = () => { db.close(); resolve(); };
-            tx.onerror = () => { db.close(); resolve(); };
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+            tx.onabort = () => resolve(false);
           });
+          db.close();
+          return ok;
         } catch (err) {
-          /* ignore */
+          if (db) {
+            try { db.close(); } catch (closeErr) { /* ignore */ }
+          }
+          return false;
         }
       }
 
@@ -2390,7 +2590,7 @@
        ====================================================================== */
     const ImageTools = (function () {
       const MAX_BYTES = 15 * 1024 * 1024;
-      const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
+      const ALLOWED_MIMES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
       const ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
 
       /**
@@ -2419,29 +2619,114 @@
       }
 
       /**
+       * Reads the first N bytes from a File/Blob with a FileReader fallback.
+       * @param {Blob} blob - File or Blob to inspect.
+       * @param {number} count - Byte count.
+       * @returns {Promise<Uint8Array>} Header bytes.
+       */
+      async function readHeaderBytes(blob, count) {
+        const slice = blob.slice(0, count);
+        if (typeof slice.arrayBuffer === "function") {
+          const buf = await slice.arrayBuffer();
+          return new Uint8Array(buf);
+        }
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.onerror = () => reject(new Error("Could not read selected file."));
+          reader.readAsArrayBuffer(slice);
+        });
+      }
+
+      /**
        * Validates file size, extension, MIME type, and real magic-byte signature.
+       * Supports mobile gallery files that omit extensions or MIME strings by falling back to magic bytes.
        * @param {File} file - Selected image file.
-       * @returns {Promise<{valid: boolean, error: string}>} Validation result.
+       * @returns {Promise<{valid: boolean, error: string, format?: string}>} Validation result.
        */
       async function validateImageFile(file) {
         if (!file) return { valid: false, error: "No file selected." };
-        if (file.size === 0) return { valid: false, error: "File is empty." };
+        if (file.size === 0) return { valid: false, error: "Selected file is empty." };
         if (file.size > MAX_BYTES) {
-          return { valid: false, error: "Image exceeds 15 MB limit." };
+          return { valid: false, error: "Image exceeds the 15 MB size limit." };
         }
-        const nameLower = (file.name || "").toLowerCase();
-        if (!ALLOWED_EXTS.some((ext) => nameLower.endsWith(ext))) {
-          return { valid: false, error: "Unsupported file extension. Use JPG, PNG, or WebP." };
+        const nameLower = (file.name || "").trim().toLowerCase();
+        const hasDot = nameLower.includes(".");
+        if (hasDot && !ALLOWED_EXTS.some((ext) => nameLower.endsWith(ext))) {
+          return { valid: false, error: "Unsupported file format. Please choose a JPG, JPEG, PNG, or WebP image." };
         }
-        if (!ALLOWED_MIMES.includes(file.type)) {
-          return { valid: false, error: "Unsupported MIME type. Use JPEG, PNG, or WebP." };
+        const typeLower = (file.type || "").trim().toLowerCase();
+        if (typeLower && !ALLOWED_MIMES.includes(typeLower)) {
+          return { valid: false, error: "Unsupported file type. Please choose a JPG, JPEG, PNG, or WebP image." };
         }
-        const headerBuf = await file.slice(0, 12).arrayBuffer();
-        const sig = detectSignature(new Uint8Array(headerBuf));
+        const headerBytes = await readHeaderBytes(file, 12);
+        const sig = detectSignature(headerBytes);
         if (!sig) {
-          return { valid: false, error: "Invalid image signature (magic bytes mismatch)." };
+          return { valid: false, error: "Invalid or corrupted image file. Only JPG, PNG, and WebP images are supported." };
         }
-        return { valid: true, error: "" };
+        return { valid: true, error: "", format: sig };
+      }
+
+      /**
+       * Decodes a File into an ImageBitmap or HTMLImageElement (using FileReader fallback).
+       * @param {File} file - Validated image file.
+       * @returns {Promise<{source: ImageBitmap|HTMLImageElement, width: number, height: number, close: Function}>} Decoded image handle.
+       */
+      async function decodeImage(file) {
+        if (typeof window.createImageBitmap === "function") {
+          try {
+            const bitmap = await window.createImageBitmap(file, { imageOrientation: "from-image" });
+            return {
+              source: bitmap,
+              width: bitmap.width,
+              height: bitmap.height,
+              close: () => { if (typeof bitmap.close === "function") bitmap.close(); }
+            };
+          } catch (orientationErr) {
+            try {
+              const bitmap = await window.createImageBitmap(file);
+              return {
+                source: bitmap,
+                width: bitmap.width,
+                height: bitmap.height,
+                close: () => { if (typeof bitmap.close === "function") bitmap.close(); }
+              };
+            } catch (bitmapErr) {
+              /* fall through to FileReader + Image */
+            }
+          }
+        }
+
+        // FileReader + Image fallback for mobile WebViews or browsers without createImageBitmap
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(new Error("Failed to read the selected image file."));
+          reader.onabort = () => reject(new Error("Image reading was cancelled."));
+          reader.readAsDataURL(file);
+        });
+
+        const img = await new Promise((resolve, reject) => {
+          const el = new Image();
+          el.onload = () => resolve(el);
+          el.onerror = () => reject(new Error("Could not decode the selected image. The file may be corrupted."));
+          el.src = dataUrl;
+        });
+
+        return {
+          source: img,
+          width: img.naturalWidth || img.width,
+          height: img.naturalHeight || img.height,
+          close: () => { elSrcClear(img); }
+        };
+      }
+
+      /**
+       * Releases temporary Image src reference.
+       * @param {HTMLImageElement} img - Image element.
+       */
+      function elSrcClear(img) {
+        try { img.src = ""; } catch (err) { /* ignore */ }
       }
 
       /**
@@ -2456,20 +2741,13 @@
           throw new Error(validation.error);
         }
 
-        let bitmap;
-        if (typeof window.createImageBitmap === "function") {
-          try {
-            bitmap = await window.createImageBitmap(file, { imageOrientation: "from-image" });
-          } catch (err) {
-            bitmap = await window.createImageBitmap(file);
-          }
-        } else {
-          throw new Error("Image decoding not supported in this browser.");
-        }
-
+        const decoded = await decodeImage(file);
         try {
-          const srcW = bitmap.width;
-          const srcH = bitmap.height;
+          const srcW = decoded.width;
+          const srcH = decoded.height;
+          if (!srcW || !srcH) {
+            throw new Error("Image has invalid dimensions.");
+          }
           let sx = 0;
           let sy = 0;
           let sw = srcW;
@@ -2492,25 +2770,35 @@
           canvas.width = dstW;
           canvas.height = dstH;
           const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Canvas 2D context unavailable.");
-          ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, dstW, dstH);
+          if (!ctx) {
+            if (!options.squareCrop && file.size <= MAX_BYTES) return file;
+            throw new Error("Canvas 2D context unavailable.");
+          }
+          ctx.drawImage(decoded.source, sx, sy, sw, sh, 0, 0, dstW, dstH);
 
           const blob = await new Promise((resolve) => {
-            canvas.toBlob((b) => {
-              if (b && b.type === "image/webp") {
-                resolve(b);
-              } else {
-                canvas.toBlob((jb) => resolve(jb), "image/jpeg", 0.85);
-              }
-            }, "image/webp", 0.85);
+            try {
+              canvas.toBlob((b) => {
+                if (b && b.size > 0 && b.type === "image/webp") {
+                  resolve(b);
+                } else {
+                  canvas.toBlob((jb) => resolve(jb || null), "image/jpeg", 0.88);
+                }
+              }, "image/webp", 0.88);
+            } catch (err) {
+              resolve(null);
+            }
           });
 
-          if (!blob) throw new Error("Failed to compress image.");
+          if (!blob || blob.size === 0) {
+            if (!options.squareCrop && file.size <= MAX_BYTES) {
+              return file;
+            }
+            throw new Error("Failed to compress image.");
+          }
           return blob;
         } finally {
-          if (bitmap && typeof bitmap.close === "function") {
-            bitmap.close();
-          }
+          decoded.close();
         }
       }
 
@@ -2527,36 +2815,18 @@
     const Background = (function () {
       let currentBgUrl = null;
       let currentLogoUrl = null;
+      let bgRequestId = 0;
 
       /**
-       * Applies background image source (Blob or static path) and visual adjustment settings.
+       * Applies visual filters, zoom, position, and dark overlay opacity to background DOM elements.
+       * @param {HTMLElement} bgEl - Target background image element.
+       * @param {HTMLElement} overlayEl - Target overlay element.
        * @param {object} bgSettings - Background adjustment config.
-       * @param {Blob|string|null|undefined} imageSource - Image Blob, static URL string, null to clear, or undefined to preserve current image.
        * @returns {void}
        */
-      function applyBackground(bgSettings, imageSource) {
-        const bgEl = document.getElementById("bg-layer");
-        const overlayEl = document.getElementById("overlay-layer");
-
-        if (imageSource !== undefined) {
-          if (currentBgUrl) {
-            URL.revokeObjectURL(currentBgUrl);
-            currentBgUrl = null;
-          }
-          if (typeof imageSource === "string" && imageSource.length > 0) {
-            bgEl.style.backgroundImage = 'url("' + imageSource + '")';
-            bgEl.classList.add("has-image");
-          } else if (imageSource) {
-            currentBgUrl = URL.createObjectURL(imageSource);
-            bgEl.style.backgroundImage = 'url("' + currentBgUrl + '")';
-            bgEl.classList.add("has-image");
-          } else {
-            bgEl.style.backgroundImage = "none";
-            bgEl.classList.remove("has-image");
-          }
-        }
-
+      function applyVisualAdjustments(bgEl, overlayEl, bgSettings) {
         const scale = (bgSettings.zoom / 100).toFixed(2);
+        bgEl.style.backgroundSize = "cover";
         bgEl.style.backgroundPosition = bgSettings.posX + "% " + bgSettings.posY + "%";
         bgEl.style.transform = "scale(" + scale + ")";
         bgEl.style.filter = "brightness(" + bgSettings.brightness + "%) blur(" + bgSettings.blur + "px)";
@@ -2565,6 +2835,74 @@
         overlayEl.style.background =
           "radial-gradient(circle at 50% 35%, rgba(5, 8, 6, " + (alpha * 0.65).toFixed(2) + "), rgba(5, 8, 6, " + alpha + "))";
         overlayEl.style.backgroundColor = "rgba(5, 8, 6, " + alpha + ")";
+      }
+
+      /**
+       * Applies background image source (Blob or static path) and visual adjustment settings.
+       * Pre-verifies image loading so broken/corrupted assets never leave a blank frame.
+       * @param {object} bgSettings - Background adjustment config.
+       * @param {Blob|string|null|undefined} imageSource - Image Blob, static URL string, null to clear, or undefined to preserve current image.
+       * @param {Function} [onError] - Optional error callback if image fails to load.
+       * @returns {void}
+       */
+      function applyBackground(bgSettings, imageSource, onError) {
+        const bgEl = document.getElementById("bg-layer");
+        const overlayEl = document.getElementById("overlay-layer");
+
+        applyVisualAdjustments(bgEl, overlayEl, bgSettings);
+
+        if (imageSource === undefined) {
+          return;
+        }
+
+        const reqId = ++bgRequestId;
+
+        if (imageSource === null || imageSource === "") {
+          if (currentBgUrl) {
+            URL.revokeObjectURL(currentBgUrl);
+            currentBgUrl = null;
+          }
+          bgEl.style.backgroundImage = "none";
+          bgEl.classList.remove("has-image");
+          return;
+        }
+
+        const isStatic = typeof imageSource === "string";
+        const nextObjectUrl = isStatic ? null : URL.createObjectURL(imageSource);
+        const targetUrl = isStatic ? imageSource : nextObjectUrl;
+        const previousObjectUrl = currentBgUrl;
+
+        // Optimistically display immediately; verify decode in background so broken images clean up gracefully
+        currentBgUrl = nextObjectUrl;
+        bgEl.style.backgroundImage = 'url("' + targetUrl + '")';
+        bgEl.style.backgroundSize = "cover";
+        bgEl.classList.add("has-image");
+
+        if (typeof Image === "function") {
+          const probe = new Image();
+          probe.onload = function () {
+            if (reqId !== bgRequestId) {
+              if (nextObjectUrl) URL.revokeObjectURL(nextObjectUrl);
+              return;
+            }
+            if (previousObjectUrl && previousObjectUrl !== nextObjectUrl) {
+              URL.revokeObjectURL(previousObjectUrl);
+            }
+          };
+          probe.onerror = function () {
+            if (nextObjectUrl) URL.revokeObjectURL(nextObjectUrl);
+            if (reqId !== bgRequestId) return;
+            currentBgUrl = null;
+            bgEl.style.backgroundImage = "none";
+            bgEl.classList.remove("has-image");
+            if (typeof onError === "function") {
+              onError(new Error("Background image failed to load."));
+            }
+          };
+          probe.src = targetUrl;
+        } else if (previousObjectUrl && previousObjectUrl !== nextObjectUrl) {
+          URL.revokeObjectURL(previousObjectUrl);
+        }
       }
 
       /**
@@ -2593,6 +2931,7 @@
 
       return {
         applyBackground,
+        applyVisualAdjustments,
         applyLogo
       };
     })();
@@ -3081,8 +3420,10 @@
        MODULE: EditPanel
        ====================================================================== */
     const EditPanel = (function () {
+      let initialized = false;
       let isOpen = false;
       let isDirty = false;
+      let isProcessingBg = false;
       let lastFocusedEl = null;
       let getSettingsFn = null;
       let applyPreviewFn = null;
@@ -3107,6 +3448,127 @@
       let pendingConfirmMode = null; // 'close' | 'reset'
       let draftSettings = null;
       let savedSnapshot = null;
+
+      // Background staging state (commits to IndexedDB only on Save Changes)
+      let pendingBgAction = "unchanged"; // 'unchanged' | 'selected' | 'applied-blob' | 'remove' | 'default'
+      let pendingBgBlob = null;
+      let pendingBgFileName = "";
+      let savedBgBlobRef = null;
+      let previewObjectUrl = null;
+
+      /**
+       * Shows or hides an inline background upload/load error message.
+       * @param {string} msg - Error text, or empty string to clear.
+       * @returns {void}
+       */
+      function setBgError(msg) {
+        const el = document.getElementById("bg-error-msg");
+        if (!el) return;
+        if (msg) {
+          el.textContent = msg;
+          el.hidden = false;
+        } else {
+          el.textContent = "";
+          el.hidden = true;
+        }
+      }
+
+      /**
+       * Toggles the loading indicator while decoding/processing a background image.
+       * @param {boolean} loading - True while processing.
+       * @returns {void}
+       */
+      function setBgLoading(loading) {
+        isProcessingBg = loading;
+        const box = document.getElementById("bg-loading-box");
+        const upBtn = document.getElementById("bg-upload-btn");
+        const repBtn = document.getElementById("bg-replace-btn");
+        const appBtn = document.getElementById("bg-apply-btn");
+        if (box) box.hidden = !loading;
+        if (upBtn) upBtn.disabled = loading;
+        if (repBtn) repBtn.disabled = loading;
+        if (appBtn) appBtn.disabled = loading;
+      }
+
+      /**
+       * Releases any object URL allocated for the Edit Panel preview frame.
+       * @returns {void}
+       */
+      function revokePreviewUrl() {
+        if (previewObjectUrl) {
+          URL.revokeObjectURL(previewObjectUrl);
+          previewObjectUrl = null;
+        }
+      }
+
+      /**
+       * Renders the live miniature background preview card inside the Background tab.
+       * Reflects any newly selected (unapplied), applied, default, or removed state plus sliders.
+       * @returns {void}
+       */
+      function updateBgPreviewCard() {
+        const layer = document.getElementById("bg-preview-layer");
+        const overlay = document.getElementById("bg-preview-overlay");
+        const emptyEl = document.getElementById("bg-preview-empty");
+        const metaEl = document.getElementById("bg-preview-meta");
+        const applyBtn = document.getElementById("bg-apply-btn");
+        if (!layer || !overlay || !emptyEl || !metaEl || !draftSettings) return;
+
+        const bg = draftSettings.background;
+        const scale = (bg.zoom / 100).toFixed(2);
+        layer.style.backgroundSize = "cover";
+        layer.style.backgroundPosition = bg.posX + "% " + bg.posY + "%";
+        layer.style.transform = "scale(" + scale + ")";
+        layer.style.filter = "brightness(" + bg.brightness + "%) blur(" + bg.blur + "px)";
+
+        const alpha = (bg.overlayOpacity / 100).toFixed(2);
+        overlay.style.backgroundColor = "rgba(5, 8, 6, " + alpha + ")";
+
+        revokePreviewUrl();
+
+        let source = null;
+        let statusText = "No background image.";
+        if (pendingBgAction === "selected" && pendingBgBlob) {
+          source = pendingBgBlob;
+          const mb = (pendingBgBlob.size / (1024 * 1024)).toFixed(2);
+          statusText = "Preview ready: " + pendingBgFileName + " (" + mb + " MB) — click Apply Background.";
+        } else if (pendingBgAction === "applied-blob" && pendingBgBlob) {
+          source = pendingBgBlob;
+          statusText = "Applied to preview (unsaved) — click Save Changes to keep.";
+        } else if (pendingBgAction === "remove") {
+          source = null;
+          statusText = "Background removed (unsaved) — click Save Changes to keep.";
+        } else if (pendingBgAction === "default") {
+          source = DEFAULT_BG_IMAGE;
+          statusText = "Default backdrop restored (unsaved) — click Save Changes to keep.";
+        } else if (savedBgBlobRef) {
+          source = savedBgBlobRef;
+          statusText = "Saved custom background active.";
+        } else if (bg.useDefaultImage) {
+          source = DEFAULT_BG_IMAGE;
+          statusText = "Default backdrop active.";
+        }
+
+        if (source instanceof Blob) {
+          previewObjectUrl = URL.createObjectURL(source);
+          layer.style.backgroundImage = 'url("' + previewObjectUrl + '")';
+          layer.classList.add("has-image");
+          emptyEl.hidden = true;
+        } else if (typeof source === "string" && source.length > 0) {
+          layer.style.backgroundImage = 'url("' + source + '")';
+          layer.classList.add("has-image");
+          emptyEl.hidden = true;
+        } else {
+          layer.style.backgroundImage = "none";
+          layer.classList.remove("has-image");
+          emptyEl.hidden = false;
+        }
+
+        metaEl.textContent = statusText;
+        if (applyBtn) {
+          applyBtn.disabled = isProcessingBg || (!pendingBgBlob && !bg.useDefaultImage && !savedBgBlobRef);
+        }
+      }
 
       /**
        * Switches active tab in Edit Mode using ARIA selected and hidden panes.
@@ -3238,19 +3700,25 @@
       function markDirtyAndPreview() {
         isDirty = true;
         if (applyPreviewFn) applyPreviewFn(draftSettings);
+        updateBgPreviewCard();
       }
 
       /**
-       * Opens Edit Mode drawer/sheet and traps keyboard focus.
+       * Opens Edit Mode drawer/sheet and loads current saved background blob for preview.
        * @param {object} currentSettings - Current committed settings.
-       * @returns {void}
+       * @returns {Promise<void>}
        */
-      function open(currentSettings) {
+      async function open(currentSettings) {
         if (isOpen) return;
         lastFocusedEl = document.activeElement;
         savedSnapshot = JSON.parse(JSON.stringify(currentSettings));
         draftSettings = JSON.parse(JSON.stringify(currentSettings));
         isDirty = false;
+        pendingBgAction = "unchanged";
+        pendingBgBlob = null;
+        pendingBgFileName = "";
+        setBgError("");
+        setBgLoading(false);
         confirmBar.hidden = true;
         pendingConfirmMode = null;
 
@@ -3258,16 +3726,31 @@
         backdrop.hidden = false;
         isOpen = true;
         gearBtn.setAttribute("aria-expanded", "true");
+        updateBgPreviewCard();
         closeBtn.focus();
+
+        // Hydrate saved custom blob reference for accurate preview thumbnail
+        const blob = await Storage.loadImageBlob("background");
+        if (isOpen && pendingBgAction === "unchanged") {
+          savedBgBlobRef = blob;
+          updateBgPreviewCard();
+        }
       }
 
       /**
-       * Forces immediate closure without prompt.
+       * Forces immediate closure without prompt and restores saved state if not committed.
        * @param {boolean} runCountdownPreview - Whether to restart countdown after closing.
-       * @returns {void}
+       * @returns {Promise<void>}
        */
-      function forceClose(runCountdownPreview) {
+      async function forceClose(runCountdownPreview) {
         if (!isOpen) return;
+        revokePreviewUrl();
+        pendingBgAction = "unchanged";
+        pendingBgBlob = null;
+        pendingBgFileName = "";
+        setBgError("");
+        setBgLoading(false);
+
         backdrop.hidden = true;
         isOpen = false;
         isDirty = false;
@@ -3276,7 +3759,22 @@
         if (lastFocusedEl && typeof lastFocusedEl.focus === "function") {
           lastFocusedEl.focus();
         }
-        if (onCloseFn) onCloseFn(Boolean(runCountdownPreview));
+        if (onCloseFn) await onCloseFn(Boolean(runCountdownPreview));
+      }
+
+      /**
+       * Cancels unsaved changes, restores saved settings and background, and closes Edit Mode.
+       * @returns {Promise<void>}
+       */
+      async function cancelAndRestore() {
+        const hadChanges = isDirty || pendingBgAction !== "unchanged";
+        if (applyPreviewFn && savedSnapshot) {
+          applyPreviewFn(JSON.parse(JSON.stringify(savedSnapshot)));
+        }
+        await forceClose(false);
+        if (hadChanges) {
+          showToast("Changes cancelled. Previous settings restored.", false);
+        }
       }
 
       /**
@@ -3297,10 +3795,47 @@
       }
 
       /**
-       * Saves draft settings after validating Telegram URL.
-       * @returns {boolean} True if saved successfully.
+       * Applies any staged uploaded background image immediately to the page background.
+       * @returns {boolean} True if an image was applied.
        */
-      function handleSave() {
+      function applyStagedBackground() {
+        setBgError("");
+        const sourceBlob = pendingBgBlob || savedBgBlobRef;
+        if (sourceBlob) {
+          pendingBgAction = "applied-blob";
+          pendingBgBlob = sourceBlob;
+          draftSettings.background.useDefaultImage = false;
+          draftSettings.background.posX = 50;
+          draftSettings.background.posY = 50;
+          syncControlsFromSettings(draftSettings);
+          Background.applyBackground(draftSettings.background, sourceBlob, (err) => {
+            setBgError(err.message);
+            showToast(err.message, true);
+          });
+          markDirtyAndPreview();
+          return true;
+        }
+        if (draftSettings.background.useDefaultImage) {
+          draftSettings.background.posX = 50;
+          draftSettings.background.posY = 50;
+          syncControlsFromSettings(draftSettings);
+          Background.applyBackground(draftSettings.background, DEFAULT_BG_IMAGE, (err) => {
+            setBgError(err.message);
+            showToast(err.message, true);
+          });
+          markDirtyAndPreview();
+          return true;
+        }
+        setBgError("Please upload a JPG, PNG, or WebP image first.");
+        showToast("Please upload an image first.", true);
+        return false;
+      }
+
+      /**
+       * Saves draft settings to localStorage and commits staged background image changes to IndexedDB.
+       * @returns {Promise<boolean>} True if saved successfully.
+       */
+      async function handleSave() {
         const urlCheck = Validators.validateTelegramUrl(document.getElementById("input-tg-url").value);
         if (!urlCheck.valid) {
           switchTab("tg");
@@ -3308,14 +3843,43 @@
           document.getElementById("input-tg-url").focus();
           return false;
         }
+
+        // If user selected a file and immediately clicked Save Changes, apply it too
+        if (pendingBgAction === "selected" && pendingBgBlob) {
+          applyStagedBackground();
+        }
+
         draftSettings.telegramUrl = urlCheck.normalized;
         const clean = Validators.migrateSettings(draftSettings, false);
+
+        let idbOk = true;
+        if (pendingBgAction === "applied-blob" && pendingBgBlob) {
+          idbOk = await Storage.saveImageBlob("background", pendingBgBlob);
+          if (idbOk) {
+            savedBgBlobRef = pendingBgBlob;
+          }
+        } else if (pendingBgAction === "remove" || pendingBgAction === "default") {
+          idbOk = await Storage.deleteImageBlob("background");
+          if (idbOk) {
+            savedBgBlobRef = null;
+          }
+        }
+
         draftSettings = JSON.parse(JSON.stringify(clean));
         savedSnapshot = JSON.parse(JSON.stringify(clean));
+        pendingBgAction = "unchanged";
+        pendingBgBlob = null;
+        pendingBgFileName = "";
         isDirty = false;
         confirmBar.hidden = true;
         if (commitSaveFn) commitSaveFn(clean);
-        showToast("Settings saved locally.", false);
+        updateBgPreviewCard();
+
+        if (!idbOk) {
+          showToast("Settings saved, but browser storage blocked saving the image.", true);
+        } else {
+          showToast("Changes saved locally.", false);
+        }
         return true;
       }
 
@@ -3331,6 +3895,9 @@
         resetAllFn = handlers.resetAll;
         onCloseFn = handlers.onClose;
         onTestCountdownFn = handlers.onTestCountdown;
+
+        if (initialized) return;
+        initialized = true;
 
         // Build 6 neon color preset buttons
         const presetsWrap = document.getElementById("btn-color-presets");
@@ -3356,15 +3923,15 @@
           tab.addEventListener("click", () => switchTab(tab.getAttribute("data-tab")));
         });
 
-        // Close & Exit
+        // Close, Cancel & Backdrop
         closeBtn.addEventListener("click", requestClose);
-        exitBtn.addEventListener("click", requestClose);
+        exitBtn.addEventListener("click", () => { cancelAndRestore(); });
         backdrop.addEventListener("click", (e) => {
           if (e.target === backdrop) requestClose();
         });
 
-        saveBtn.addEventListener("click", () => {
-          handleSave();
+        saveBtn.addEventListener("click", async () => {
+          await handleSave();
         });
 
         resetFooterBtn.addEventListener("click", () => {
@@ -3391,19 +3958,21 @@
             if (resetAllFn) await resetAllFn();
             draftSettings = JSON.parse(JSON.stringify(getSettingsFn()));
             savedSnapshot = JSON.parse(JSON.stringify(draftSettings));
+            pendingBgAction = "unchanged";
+            pendingBgBlob = null;
+            savedBgBlobRef = null;
             isDirty = false;
             syncControlsFromSettings(draftSettings);
+            updateBgPreviewCard();
             showToast("All settings reset to defaults.", false);
           } else {
-            // Discard unsaved edits and restore snapshot
-            if (applyPreviewFn && savedSnapshot) applyPreviewFn(savedSnapshot);
-            forceClose(false);
+            await cancelAndRestore();
           }
         });
 
-        confirmSaveBtn.addEventListener("click", () => {
-          if (handleSave()) {
-            forceClose(false);
+        confirmSaveBtn.addEventListener("click", async () => {
+          if (await handleSave()) {
+            await forceClose(false);
           }
         });
 
@@ -3437,7 +4006,7 @@
           }
         });
 
-        // Background sliders
+        // Background sliders & Zoom In / Out step buttons
         const bindRange = (id, valId, unit, setter) => {
           document.getElementById(id).addEventListener("input", (e) => {
             const num = Number(e.target.value);
@@ -3454,29 +4023,54 @@
         bindRange("slider-bg-blur", "val-bg-blur", "px", (v) => { draftSettings.background.blur = v; });
         bindRange("slider-bg-overlay", "val-bg-overlay", "%", (v) => { draftSettings.background.overlayOpacity = v; });
 
+        function stepZoom(delta) {
+          const next = Validators.clampNumber((draftSettings.background.zoom || 100) + delta, 100, 300, 100);
+          draftSettings.background.zoom = next;
+          setRange("slider-bg-zoom", "val-bg-zoom", next, "%");
+          markDirtyAndPreview();
+        }
+        document.getElementById("bg-zoom-out-btn").addEventListener("click", () => stepZoom(-15));
+        document.getElementById("bg-zoom-in-btn").addEventListener("click", () => stepZoom(15));
+
         // Background file upload & drag-drop
         const bgInput = document.getElementById("bg-file-input");
         const dropzone = document.getElementById("bg-dropzone");
 
         async function handleBgFile(file) {
-          if (!file) return;
+          if (!file || isProcessingBg) return;
+          setBgError("");
+          setBgLoading(true);
           try {
             const blob = await ImageTools.processImage(file, { maxSide: 2560, squareCrop: false });
-            draftSettings.background.useDefaultImage = false;
-            Background.applyBackground(draftSettings.background, blob);
-            markDirtyAndPreview();
-            await Storage.saveImageBlob("background", blob);
-            showToast("Background updated.", false);
+            pendingBgBlob = blob;
+            pendingBgFileName = file.name || "selected-image";
+            pendingBgAction = "selected";
+            isDirty = true;
+            updateBgPreviewCard();
+            showToast("Image ready in preview. Click Apply Background to set it.", false);
           } catch (err) {
-            showToast(err.message || "Failed to process image.", true);
+            const errMsg = (err && err.message) ? err.message : "Failed to process image.";
+            setBgError(errMsg);
+            showToast(errMsg, true);
+          } finally {
+            setBgLoading(false);
+            bgInput.value = "";
           }
         }
 
-        document.getElementById("bg-upload-btn").addEventListener("click", () => bgInput.click());
-        document.getElementById("bg-replace-btn").addEventListener("click", () => bgInput.click());
+        function openGalleryPicker() {
+          if (isProcessingBg) return;
+          setBgError("");
+          bgInput.click();
+        }
+
+        document.getElementById("bg-upload-btn").addEventListener("click", openGalleryPicker);
+        document.getElementById("bg-replace-btn").addEventListener("click", openGalleryPicker);
         bgInput.addEventListener("change", (e) => {
-          handleBgFile(e.target.files[0]);
-          bgInput.value = "";
+          const file = e.target && e.target.files ? e.target.files[0] : null;
+          if (file) {
+            handleBgFile(file);
+          }
         });
 
         dropzone.addEventListener("dragover", (e) => {
@@ -3487,26 +4081,65 @@
         dropzone.addEventListener("drop", (e) => {
           e.preventDefault();
           dropzone.classList.remove("is-dragover");
-          if (e.dataTransfer && e.dataTransfer.files[0]) {
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
             handleBgFile(e.dataTransfer.files[0]);
           }
         });
 
+        document.getElementById("bg-apply-btn").addEventListener("click", () => {
+          if (applyStagedBackground()) {
+            showToast("Background applied. Click Save Changes to keep it.", false);
+          }
+        });
+
         document.getElementById("bg-reset-adj-btn").addEventListener("click", () => {
-          const keepDefault = draftSettings.background.useDefaultImage;
-          draftSettings.background = getDefaultSettings(false).background;
-          draftSettings.background.useDefaultImage = keepDefault;
+          setBgError("");
+          const isDefault = pendingBgAction === "default" || (pendingBgAction === "unchanged" && draftSettings.background.useDefaultImage && !savedBgBlobRef);
+          const defBg = getDefaultSettings(false).background;
+          draftSettings.background = {
+            useDefaultImage: draftSettings.background.useDefaultImage,
+            zoom: 100,
+            posX: 50,
+            posY: 50,
+            brightness: isDefault ? defBg.brightness : 100,
+            blur: isDefault ? defBg.blur : 0,
+            overlayOpacity: isDefault ? defBg.overlayOpacity : 55
+          };
+          if (pendingBgAction === "selected") {
+            pendingBgAction = "unchanged";
+            pendingBgBlob = null;
+            pendingBgFileName = "";
+          }
           syncControlsFromSettings(draftSettings);
           markDirtyAndPreview();
           showToast("Background adjustments reset.", false);
         });
 
-        document.getElementById("bg-remove-btn").addEventListener("click", async () => {
+        document.getElementById("bg-restore-default-btn").addEventListener("click", () => {
+          setBgError("");
+          pendingBgAction = "default";
+          pendingBgBlob = null;
+          pendingBgFileName = "";
+          draftSettings.background = getDefaultSettings(false).background;
+          draftSettings.background.useDefaultImage = true;
+          Background.applyBackground(draftSettings.background, DEFAULT_BG_IMAGE, (err) => {
+            setBgError(err.message);
+            showToast(err.message, true);
+          });
+          syncControlsFromSettings(draftSettings);
+          markDirtyAndPreview();
+          showToast("Default background restored. Click Save Changes to keep it.", false);
+        });
+
+        document.getElementById("bg-remove-btn").addEventListener("click", () => {
+          setBgError("");
+          pendingBgAction = "remove";
+          pendingBgBlob = null;
+          pendingBgFileName = "";
           draftSettings.background.useDefaultImage = false;
           Background.applyBackground(draftSettings.background, null);
           markDirtyAndPreview();
-          showToast("Background image removed.", false);
-          await Storage.deleteImageBlob("background");
+          showToast("Background removed. Click Save Changes to keep or Cancel to restore.", false);
         });
 
         // Telegram tab controls
@@ -3563,9 +4196,9 @@
           });
         });
 
-        document.getElementById("test-countdown-btn").addEventListener("click", () => {
-          if (handleSave()) {
-            forceClose(true);
+        document.getElementById("test-countdown-btn").addEventListener("click", async () => {
+          if (await handleSave()) {
+            await forceClose(true);
             if (onTestCountdownFn) onTestCountdownFn();
           }
         });
@@ -3595,8 +4228,7 @@
         const logoInput = document.getElementById("logo-file-input");
         document.getElementById("logo-upload-btn").addEventListener("click", () => logoInput.click());
         logoInput.addEventListener("change", async (e) => {
-          const file = e.target.files[0];
-          logoInput.value = "";
+          const file = e.target && e.target.files ? e.target.files[0] : null;
           if (!file) return;
           try {
             const blob = await ImageTools.processImage(file, { maxSide: 512, squareCrop: true });
@@ -3605,6 +4237,8 @@
             showToast("Logo updated.", false);
           } catch (err) {
             showToast(err.message || "Failed to process logo.", true);
+          } finally {
+            logoInput.value = "";
           }
         });
 
@@ -3996,11 +4630,14 @@
         }, { passive: true });
       }
 
+      let wasPausedBeforeEdit = false;
+
       /**
        * Handles PIN gate before opening Edit Mode if an owner PIN is set.
        * @returns {void}
        */
       function requestOpenEditMode() {
+        wasPausedBeforeEdit = (state === "PAUSED" || state === "DISABLED");
         Countdown.stop();
         setState("EDITING");
 
@@ -4031,7 +4668,11 @@
           Storage.loadImageBlob("logo")
         ]);
         if (bgBlob) {
-          Background.applyBackground(settings.background, bgBlob);
+          Background.applyBackground(settings.background, bgBlob, () => {
+            if (settings.background.useDefaultImage) {
+              Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
+            }
+          });
         } else if (settings.background.useDefaultImage) {
           Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
         } else {
@@ -4088,7 +4729,11 @@
         // PIN dialog handlers
         document.getElementById("pin-unlock-cancel").addEventListener("click", () => {
           document.getElementById("pin-backdrop").hidden = true;
-          startRedirectFlow(false);
+          if (wasPausedBeforeEdit) {
+            cancelRedirect();
+          } else {
+            startRedirectFlow(false);
+          }
         });
 
         document.getElementById("pin-unlock-submit").addEventListener("click", async () => {
@@ -4138,7 +4783,11 @@
             settings = Storage.loadSettings(reducedMotion);
             const savedBg = await Storage.loadImageBlob("background");
             if (savedBg) {
-              Background.applyBackground(settings.background, savedBg);
+              Background.applyBackground(settings.background, savedBg, () => {
+                if (settings.background.useDefaultImage) {
+                  Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
+                }
+              });
             } else if (settings.background.useDefaultImage) {
               Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
             } else {
@@ -4147,6 +4796,8 @@
             applySettingsToUI(settings);
             if (runCountdownPreview) {
               startRedirectFlow(true);
+            } else if (wasPausedBeforeEdit) {
+              cancelRedirect();
             } else {
               startRedirectFlow(false);
             }
