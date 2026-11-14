@@ -1,0 +1,4177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'">
+  <title>CyberSec Telegram Gateway — Join Our Community</title>
+  <meta name="description" content="Privacy-first legal technology and cybersecurity Telegram community landing gateway.">
+  <meta property="og:title" content="CyberSec Telegram Gateway">
+  <meta property="og:description" content="Learn. Share. Secure. Legal tech and cybersecurity discussions on Telegram.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <style>
+    /* === 1. CSS VARIABLES === */
+    :root {
+      --neon: #00FF75;
+      --neon-rgb: 0, 255, 117;
+      --bg: #050806;
+      --panel: rgba(18, 22, 20, 0.62);
+      --panel-solid: #101412;
+      --border: rgba(0, 255, 117, 0.35);
+      --glow: 0 0 18px rgba(0, 255, 117, 0.45);
+      --radius: 18px;
+      --blur: 14px;
+      --btn-bg: #00FF75;
+      --btn-text: #041209;
+      --panel-opacity: 0.62;
+      --text-primary: #F2F7F4;
+      --text-secondary: #B4C2BA;
+      --text-muted: #8E9E95;
+      --danger: #FF5566;
+      --warn: #FFB800;
+      --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* === 2. BASE === */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      overflow-x: hidden;
+      overflow-x: clip;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      overflow-x: clip;
+      position: relative;
+      padding:
+        env(safe-area-inset-top, 0px)
+        env(safe-area-inset-right, 0px)
+        env(safe-area-inset-bottom, 0px)
+        env(safe-area-inset-left, 0px);
+    }
+
+    button, input, textarea, select {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--neon);
+      outline-offset: 3px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    /* === 3. LAYERS === */
+    .layer-base {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-color: var(--bg);
+      pointer-events: none;
+    }
+
+    .layer-bg {
+      position: fixed;
+      inset: -24px;
+      z-index: 2;
+      background-size: cover;
+      background-position: 50% 50%;
+      background-repeat: no-repeat;
+      transform: scale(1);
+      transform-origin: center center;
+      filter: brightness(100%) blur(0px);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+      will-change: transform, filter;
+    }
+
+    .layer-bg.has-image {
+      opacity: 1;
+    }
+
+    .layer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      background: radial-gradient(circle at 50% 35%, rgba(5, 8, 6, 0.45), rgba(5, 8, 6, 0.88));
+      background-color: rgba(5, 8, 6, 0.55);
+      pointer-events: none;
+    }
+
+    #matrix-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+      pointer-events: none;
+      display: block;
+    }
+
+    #particles-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+      display: block;
+    }
+
+    .layer-scanline {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .layer-scanline::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--neon) 50%, transparent 100%);
+      opacity: 0.15;
+      transform: translateY(-10px);
+      animation: scanlineSweep 5s linear infinite;
+      will-change: transform;
+    }
+
+    .no-scanline .layer-scanline::after,
+    .anim-off .layer-scanline::after {
+      animation: none;
+      opacity: 0;
+    }
+
+    @keyframes scanlineSweep {
+      0% { transform: translateY(-4px); }
+      100% { transform: translateY(100vh); }
+    }
+
+    .layer-content {
+      position: relative;
+      z-index: 7;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px 76px;
+    }
+
+    .layer-cards {
+      position: fixed;
+      inset: 0;
+      z-index: 8;
+      pointer-events: none;
+      overflow: hidden;
+      perspective: 1000px;
+    }
+
+    .no-cards .layer-cards,
+    .anim-off .layer-cards {
+      display: none;
+    }
+
+    /* === 4. COMPONENTS === */
+    /* Boot Overlay */
+    .boot-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 11;
+      background-color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    .boot-overlay.is-done {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .boot-box {
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      font-family: var(--font-mono);
+    }
+
+    .boot-label {
+      font-size: 0.875rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--neon);
+      margin: 0 0 14px;
+    }
+
+    .boot-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .boot-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--neon);
+      box-shadow: var(--glow);
+      transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Main Card */
+    .gateway-card {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      padding: 24px 20px;
+      border-radius: var(--radius);
+      background-color: var(--panel-solid);
+      background: var(--panel);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--border);
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.72),
+        var(--glow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gateway-card.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Subtle Animated Border Sweep */
+    .gateway-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(125deg, transparent 20%, var(--neon) 50%, transparent 80%);
+      background-size: 250% 250%;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.55;
+      animation: borderSweep 7s ease-in-out infinite alternate;
+    }
+
+    .anim-off .gateway-card::before {
+      animation: none;
+      opacity: 0.25;
+    }
+
+    @keyframes borderSweep {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    /* Logo Emblem */
+    .logo-ring {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      border: 2px solid var(--neon);
+      box-shadow: var(--glow), inset 0 0 16px rgba(0, 255, 117, 0.2);
+      background: rgba(8, 12, 10, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .logo-ring svg {
+      width: 44px;
+      height: 44px;
+      color: var(--neon);
+      display: block;
+    }
+
+    .logo-ring img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Typography */
+    .kicker-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--neon);
+      margin: 0;
+    }
+
+    .main-heading {
+      margin: 0;
+      font-size: clamp(1.4rem, 3.6vw, 1.9rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      color: var(--text-primary);
+      text-wrap: balance;
+      position: relative;
+      max-width: 24ch;
+    }
+
+    .main-heading.is-glitching {
+      animation: headingGlitch 0.6s steps(2, end) 1;
+    }
+
+    .anim-off .main-heading.is-glitching {
+      animation: none;
+    }
+
+    @keyframes headingGlitch {
+      0% { transform: translate(0, 0); text-shadow: -2px 0 var(--neon), 2px 0 #00C8FF; }
+      20% { transform: translate(-2px, 1px); text-shadow: 2px 0 var(--neon), -2px 0 #00C8FF; }
+      40% { transform: translate(2px, -1px); text-shadow: -1px 0 var(--neon); }
+      60% { transform: translate(-1px, 0); text-shadow: 1px 0 var(--neon); }
+      80% { transform: translate(1px, 1px); text-shadow: none; }
+      100% { transform: translate(0, 0); text-shadow: none; }
+    }
+
+    .main-subtitle {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--text-secondary);
+      max-width: 44ch;
+    }
+
+    /* Terminal Box */
+    .terminal-box {
+      width: 100%;
+      background: rgba(5, 8, 6, 0.85);
+      border: 1px solid rgba(0, 255, 117, 0.28);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      color: #D2F5DF;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      min-height: 106px;
+      overflow: hidden;
+    }
+
+    .terminal-line {
+      margin: 0;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .terminal-cursor {
+      display: inline-block;
+      width: 0.55em;
+      height: 1em;
+      vertical-align: -0.15em;
+      background-color: var(--neon);
+      margin-left: 3px;
+      animation: cursorBlink 0.9s step-end infinite;
+    }
+
+    .anim-off .terminal-cursor {
+      animation: none;
+    }
+
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* Countdown Ring */
+    .countdown-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .countdown-ring-wrap {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .countdown-svg {
+      width: 84px;
+      height: 84px;
+      transform: rotate(-90deg);
+    }
+
+    .countdown-track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 5;
+    }
+
+    .countdown-progress {
+      fill: none;
+      stroke: var(--neon);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 226.19;
+      stroke-dashoffset: 0;
+    }
+
+    .countdown-number {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1.55rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+    }
+
+    .countdown-status {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .example-notice {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
+      color: var(--warn);
+      background: rgba(255, 184, 0, 0.08);
+      border: 1px solid rgba(255, 184, 0, 0.35);
+      border-radius: 8px;
+      padding: 6px 10px;
+      width: 100%;
+    }
+
+    /* Action Buttons */
+    .actions-stack {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 44px;
+      min-width: 44px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    @media (hover: hover) {
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+    }
+
+    .btn-primary {
+      width: 100%;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      padding: 14px 20px;
+      font-size: 1rem;
+      box-shadow: 0 0 20px rgba(0, 255, 117, 0.35);
+      animation: btnPulse 2s ease-in-out infinite;
+    }
+
+    .btn-primary.size-small {
+      padding: 10px 16px;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary.size-medium {
+      padding: 14px 20px;
+      font-size: 1rem;
+    }
+
+    .btn-primary.size-large {
+      padding: 18px 24px;
+      font-size: 1.08rem;
+    }
+
+    .anim-off .btn-primary {
+      animation: none;
+    }
+
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.32); }
+      50% { box-shadow: 0 0 28px rgba(var(--neon-rgb), 0.65); }
+    }
+
+    .btn-primary svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .secondary-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-secondary {
+      padding: 10px 14px;
+      font-size: 0.875rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--neon);
+      background: rgba(0, 255, 117, 0.08);
+    }
+
+    .btn-ghost {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      color: var(--neon);
+      background: rgba(0, 255, 117, 0.06);
+    }
+
+    .btn-danger {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      background: rgba(255, 85, 102, 0.12);
+      border: 1px solid rgba(255, 85, 102, 0.45);
+      color: #FF8A96;
+    }
+
+    .btn-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.32);
+      transform: scale(0);
+      pointer-events: none;
+      animation: rippleAnim 0.45s ease-out forwards;
+    }
+
+    @keyframes rippleAnim {
+      to {
+        transform: scale(3.5);
+        opacity: 0;
+      }
+    }
+
+    /* Destination Disclosure Block */
+    .disclosure-box {
+      width: 100%;
+      background: rgba(5, 8, 6, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .disclosure-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .disclosure-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .disclosure-url {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      overflow-wrap: anywhere;
+      word-break: normal;
+      color: var(--neon);
+      margin: 0;
+      flex: 1;
+    }
+
+    .btn-copy {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0 12px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+
+    .btn-copy:hover {
+      border-color: var(--neon);
+    }
+
+    .redirect-fallback {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--neon);
+      background: rgba(0, 255, 117, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.86rem;
+    }
+
+    .redirect-fallback a {
+      color: var(--neon);
+      font-family: var(--font-mono);
+      word-break: break-all;
+      font-weight: 600;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .consent-text {
+      margin: 0;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .card-footer {
+      margin: 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* Fictional 3D Cards */
+    .fictional-card {
+      position: absolute;
+      width: 250px;
+      height: 152px;
+      border-radius: 14px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(16, 22, 19, 0.86) 0%, rgba(7, 11, 9, 0.92) 60%, rgba(0, 255, 117, 0.14) 100%);
+      border: 1px solid rgba(0, 255, 117, 0.32);
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+      transform-style: preserve-3d;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #DCECE2;
+      font-family: var(--font-mono);
+      will-change: transform;
+      user-select: none;
+    }
+
+    .fictional-card--1 {
+      top: 14%;
+      right: calc(50% + 312px);
+      animation: cardFloat1 7s ease-in-out infinite alternate;
+    }
+
+    .fictional-card--2 {
+      bottom: 14%;
+      left: calc(50% + 312px);
+      animation: cardFloat2 8.5s ease-in-out 0.8s infinite alternate;
+    }
+
+    .fictional-card--3 {
+      top: 12%;
+      left: calc(50% + 332px);
+      width: 224px;
+      height: 136px;
+      opacity: 0.78;
+      animation: cardFloat3 6.5s ease-in-out 1.4s infinite alternate;
+    }
+
+    @keyframes cardFloat1 {
+      0% { transform: translate3d(0, 0, 0) rotateX(8deg) rotateY(14deg) rotateZ(-6deg); }
+      100% { transform: translate3d(0, -16px, 0) rotateX(2deg) rotateY(8deg) rotateZ(-3deg); }
+    }
+
+    @keyframes cardFloat2 {
+      0% { transform: translate3d(0, 0, 0) rotateX(-6deg) rotateY(-14deg) rotateZ(5deg); }
+      100% { transform: translate3d(0, -18px, 0) rotateX(2deg) rotateY(-8deg) rotateZ(2deg); }
+    }
+
+    @keyframes cardFloat3 {
+      0% { transform: translate3d(0, 0, 0) rotateX(6deg) rotateY(-12deg) rotateZ(4deg); }
+      100% { transform: translate3d(0, 14px, 0) rotateX(-2deg) rotateY(-6deg) rotateZ(1deg); }
+    }
+
+    .fc-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .fc-chip {
+      width: 34px;
+      height: 24px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, rgba(0, 255, 117, 0.38), rgba(0, 255, 117, 0.08));
+      border: 1px solid rgba(0, 255, 117, 0.55);
+      position: relative;
+    }
+
+    .fc-chip::before {
+      content: "";
+      position: absolute;
+      inset: 5px 7px;
+      border: 1px solid rgba(0, 255, 117, 0.45);
+      border-radius: 2px;
+    }
+
+    .fc-watermark {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--neon);
+      opacity: 0.85;
+      border: 1px solid rgba(0, 255, 117, 0.3);
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .fc-number {
+      font-size: 0.86rem;
+      letter-spacing: 0.12em;
+      color: #ECF7F0;
+    }
+
+    .fc-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Settings Gear */
+    .settings-gear {
+      position: fixed;
+      right: max(16px, env(safe-area-inset-right, 16px));
+      bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      z-index: 9;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(18, 22, 20, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .settings-gear:hover {
+      border-color: var(--neon);
+      color: var(--neon);
+    }
+
+    .settings-gear svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* === 5. EDIT PANEL === */
+    .edit-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.56);
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+
+    .edit-panel {
+      width: 100%;
+      max-height: 88dvh;
+      max-height: 88vh;
+      background: #0D110F;
+      background: rgba(13, 17, 15, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.75);
+      overflow: hidden;
+    }
+
+    .edit-drag-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.24);
+      margin: 10px auto 4px;
+      flex-shrink: 0;
+    }
+
+    .edit-header {
+      padding: 10px 18px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+
+    .edit-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--neon);
+      font-family: var(--font-mono);
+    }
+
+    .edit-close-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .edit-close-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--neon);
+    }
+
+    .edit-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+      overflow-x: auto;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+      scrollbar-width: thin;
+    }
+
+    .edit-tab {
+      min-height: 44px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      border: 1px solid transparent;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .edit-tab[aria-selected="true"],
+    .edit-tab.is-active {
+      background: rgba(0, 255, 117, 0.14);
+      color: var(--neon);
+      border-color: rgba(0, 255, 117, 0.35);
+    }
+
+    .edit-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .tab-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .field-value {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--neon);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .text-input, .select-input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    .text-input:focus, .select-input:focus {
+      outline: none;
+      border-color: var(--neon);
+      box-shadow: 0 0 0 2px rgba(0, 255, 117, 0.2);
+    }
+
+    textarea.text-input {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .range-input {
+      width: 100%;
+      height: 36px;
+      accent-color: var(--neon);
+      cursor: pointer;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 44px;
+      padding: 4px 0;
+    }
+
+    .toggle-label {
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .switch-input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 48px;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .switch-input::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #E5ECE8;
+      transition: transform 0.2s ease;
+    }
+
+    .switch-input:checked {
+      background: rgba(0, 255, 117, 0.3);
+      border-color: var(--neon);
+    }
+
+    .switch-input:checked::after {
+      transform: translateX(20px);
+      background: var(--neon);
+    }
+
+    .dropzone {
+      border: 1.5px dashed rgba(0, 255, 117, 0.4);
+      border-radius: 12px;
+      padding: 18px 14px;
+      text-align: center;
+      background: rgba(0, 255, 117, 0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .dropzone.is-dragover {
+      border-color: var(--neon);
+      background: rgba(0, 255, 117, 0.12);
+    }
+
+    .dropzone-hint {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-picker {
+      width: 44px;
+      height: 44px;
+      padding: 2px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .color-presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .preset-swatch {
+      width: 34px;
+      height: 34px;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preset-swatch-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+    }
+
+    .segmented-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+      gap: 6px;
+    }
+
+    .seg-btn {
+      min-height: 44px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .seg-btn[aria-pressed="true"] {
+      border-color: var(--neon);
+      background: rgba(0, 255, 117, 0.16);
+      color: var(--neon);
+    }
+
+    .validation-msg {
+      margin: 0;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .validation-msg.is-valid {
+      color: #8FFFC0;
+      background: rgba(0, 255, 117, 0.1);
+      border: 1px solid rgba(0, 255, 117, 0.3);
+    }
+
+    .validation-msg.is-error {
+      color: #FF99A4;
+      background: rgba(255, 85, 102, 0.12);
+      border: 1px solid rgba(255, 85, 102, 0.35);
+    }
+
+    .preview-url-box {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      word-break: break-all;
+      color: var(--neon);
+    }
+
+    .inline-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .inline-actions > * {
+      flex: 1 1 auto;
+    }
+
+    .note-box {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 0;
+    }
+
+    .edit-footer {
+      padding: 12px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(9, 12, 10, 0.98);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .edit-footer-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .confirm-bar {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 184, 0, 0.1);
+      border: 1px solid rgba(255, 184, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    /* PIN Modal */
+    .pin-dialog {
+      width: 100%;
+      max-width: 360px;
+      margin: auto;
+      background: #0D110F;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Toasts */
+    .toast-container {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top, 16px));
+      right: max(16px, env(safe-area-inset-right, 16px));
+      left: max(16px, env(safe-area-inset-left, 16px));
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      max-width: 360px;
+      width: auto;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(14, 18, 16, 0.95);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 0.84rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      pointer-events: auto;
+      animation: toastIn 0.2s ease-out;
+    }
+
+    .toast.is-error {
+      border-color: rgba(255, 85, 102, 0.65);
+      color: #FFB3BC;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === 6. MEDIA QUERIES === */
+    @media (min-width: 640px) {
+      .layer-content {
+        padding: 16px 24px 64px;
+      }
+      .gateway-card {
+        max-width: 560px;
+        padding: 22px 26px;
+        gap: 13px;
+      }
+      .terminal-box {
+        min-height: 92px;
+        padding: 10px 14px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .edit-backdrop {
+        align-items: stretch;
+      }
+      .edit-panel {
+        width: 380px;
+        max-width: 100vw;
+        height: 100%;
+        max-height: 100vh;
+        max-height: 100dvh;
+        border-top: none;
+        border-left: 1px solid var(--border);
+        border-radius: 0;
+      }
+      .edit-drag-handle {
+        display: none;
+      }
+    }
+
+    @media (max-width: 359px) {
+      .layer-cards {
+        display: none;
+      }
+      .secondary-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1159px) and (min-width: 360px) {
+      .layer-content {
+        padding-top: 56px;
+        padding-bottom: 84px;
+      }
+      .gateway-card {
+        gap: 12px;
+        padding: 20px 16px;
+      }
+      .logo-ring {
+        width: 72px;
+        height: 72px;
+      }
+      .logo-ring svg {
+        width: 38px;
+        height: 38px;
+      }
+      .terminal-box {
+        min-height: 86px;
+        padding: 10px 12px;
+      }
+      .fictional-card {
+        width: 158px;
+        height: 96px;
+        padding: 10px;
+        opacity: 0.34;
+      }
+      .fc-number {
+        font-size: 0.62rem;
+      }
+      .fc-watermark, .fc-bottom {
+        font-size: 0.5rem;
+      }
+      .fictional-card--1 {
+        top: -22px;
+        left: -28px;
+        right: auto;
+      }
+      .fictional-card--2 {
+        bottom: -20px;
+        right: -28px;
+        left: auto;
+      }
+      .fictional-card--3 {
+        display: none;
+      }
+    }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      .layer-content {
+        padding: 12px 16px 64px;
+      }
+      .gateway-card {
+        padding: 16px 20px;
+        gap: 10px;
+      }
+      .logo-ring {
+        width: 56px;
+        height: 56px;
+      }
+      .logo-ring svg {
+        width: 30px;
+        height: 30px;
+      }
+      .terminal-box {
+        display: none;
+      }
+      .countdown-ring-wrap {
+        width: 72px;
+        height: 72px;
+      }
+      .countdown-svg {
+        width: 72px;
+        height: 72px;
+      }
+      .countdown-number {
+        font-size: 1.3rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body data-state="BOOT">
+  <!-- Layer 1: Base Black -->
+  <div class="layer-base" aria-hidden="true"></div>
+
+  <!-- Layer 2: Customizable Background Image -->
+  <div id="bg-layer" class="layer-bg" aria-hidden="true"></div>
+
+  <!-- Layer 3: Dark Scrim Overlay -->
+  <div id="overlay-layer" class="layer-overlay" aria-hidden="true"></div>
+
+  <!-- Layer 4: Matrix Rain Canvas -->
+  <canvas id="matrix-canvas" data-testid="matrix-canvas" aria-hidden="true"></canvas>
+
+  <!-- Layer 5: Floating Particles Canvas -->
+  <canvas id="particles-canvas" data-testid="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Layer 6: Scanline Sweep -->
+  <div class="layer-scanline" aria-hidden="true"></div>
+
+  <!-- Layer 7: Main Content -->
+  <main class="layer-content">
+    <section id="gateway-card" class="gateway-card" aria-labelledby="main-heading">
+      <!-- 1. Logo / Emblem -->
+      <div id="logo-ring" class="logo-ring">
+        <svg id="default-logo-svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M24 5L9 11.5V22.5C9 32.5 15.4 40.8 24 43.5C32.6 40.8 39 32.5 39 22.5V11.5L24 5Z"></path>
+          <polyline points="17 20 22 25 17 30"></polyline>
+          <line x1="25" y1="30" x2="32" y2="30"></line>
+        </svg>
+        <img id="custom-logo-img" alt="Community emblem" referrerpolicy="no-referrer" hidden>
+      </div>
+
+      <p class="kicker-label">Legal Tech &amp; Cyber Security</p>
+
+      <!-- 2. Main Heading -->
+      <h1 id="main-heading" class="main-heading">Join Our Cyber Security Community</h1>
+
+      <!-- 3. Subtitle -->
+      <p id="main-subtitle" class="main-subtitle">Learn. Share. Secure. Legal tech and cybersecurity discussions on Telegram.</p>
+
+      <!-- 4. Terminal Box -->
+      <div id="terminal-box" class="terminal-box" aria-label="Channel verification sequence">
+        <p id="terminal-lines" class="terminal-line"></p>
+      </div>
+
+      <!-- 5. Countdown Area -->
+      <div id="countdown-area" class="countdown-area">
+        <div id="countdown-ring-wrap" class="countdown-ring-wrap">
+          <svg class="countdown-svg" viewBox="0 0 84 84" aria-hidden="true">
+            <circle class="countdown-track" cx="42" cy="42" r="36"></circle>
+            <circle id="countdown-progress" class="countdown-progress" cx="42" cy="42" r="36"></circle>
+          </svg>
+          <span id="countdown-number" class="countdown-number" aria-hidden="true">5</span>
+        </div>
+        <p id="countdown-status" class="countdown-status">Opening Telegram in 5 seconds</p>
+        <p id="countdown-live" class="sr-only" aria-live="polite"></p>
+        <p id="example-notice" class="example-notice" hidden>Example destination active — update your Telegram URL in Settings before sharing.</p>
+      </div>
+
+      <!-- 6. Primary Join Button + 7. Secondary Actions -->
+      <div class="actions-stack">
+        <button id="join-btn" type="button" class="btn btn-primary size-medium">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M21.94 3.45a1.5 1.5 0 0 0-1.56-.2L2.88 10.6a1.5 1.5 0 0 0 .1 2.8l4.46 1.5 1.72 5.36a1.2 1.2 0 0 0 2.02.45l2.63-2.66 4.77 3.5a1.5 1.5 0 0 0 2.35-.92L22.5 5a1.5 1.5 0 0 0-.56-1.55ZM9.65 14.32l8.53-6.66-6.75 7.98-.32 3.3-1.46-4.62Z"/>
+          </svg>
+          <span id="join-btn-label">Join Telegram Channel</span>
+        </button>
+
+        <div id="secondary-actions" class="secondary-row">
+          <button id="skip-btn" type="button" class="btn btn-secondary">Skip Animation</button>
+          <button id="cancel-btn" type="button" class="btn btn-secondary">Stay on this page</button>
+        </div>
+
+        <button id="resume-btn" type="button" class="btn btn-ghost" hidden>Resume Auto-Redirect</button>
+      </div>
+
+      <!-- Redirect Fallback (shown during redirect or if blocked) -->
+      <div id="redirect-fallback" class="redirect-fallback" hidden>
+        <span>If Telegram did not open automatically, use the direct verified link:</span>
+        <a id="fallback-link" href="https://t.me/igmaxtcc" target="_blank" rel="noopener noreferrer">https://t.me/igmaxtcc</a>
+      </div>
+
+      <!-- 8. Destination Disclosure Block -->
+      <div class="disclosure-box">
+        <p class="disclosure-label">Verified Destination</p>
+        <div class="disclosure-row">
+          <p class="disclosure-url">You will open Telegram: <span id="disclosure-url-text">https://t.me/igmaxtcc</span></p>
+          <button id="copy-url-btn" type="button" class="btn-copy" aria-label="Copy Telegram URL">Copy</button>
+        </div>
+      </div>
+
+      <!-- 9. Consent Line -->
+      <p id="consent-text" class="consent-text">By continuing you will leave this page and open Telegram. This page does not collect your data.</p>
+
+      <!-- 10. Footer -->
+      <p class="card-footer">Fictional card graphics are decorative only.</p>
+    </section>
+  </main>
+
+  <!-- Layer 8: Floating Fictional 3D Cards (Decorative Only) -->
+  <div id="cards-layer" class="layer-cards" aria-hidden="true">
+    <div class="fictional-card fictional-card--1" data-tilt-card>
+      <div class="fc-top">
+        <div class="fc-chip"></div>
+        <span class="fc-watermark">SAMPLE CARD - FICTIONAL</span>
+      </div>
+      <div class="fc-number">0000 0000 0000 0000</div>
+      <div class="fc-bottom">
+        <span>CYBER MEMBER</span>
+        <span>FICTIONAL</span>
+      </div>
+    </div>
+
+    <div class="fictional-card fictional-card--2" data-tilt-card>
+      <div class="fc-top">
+        <div class="fc-chip"></div>
+        <span class="fc-watermark">SAMPLE CARD - FICTIONAL</span>
+      </div>
+      <div class="fc-number">0000 0000 0000 0000</div>
+      <div class="fc-bottom">
+        <span>CYBER MEMBER</span>
+        <span>FICTIONAL</span>
+      </div>
+    </div>
+
+    <div class="fictional-card fictional-card--3" data-tilt-card>
+      <div class="fc-top">
+        <div class="fc-chip"></div>
+        <span class="fc-watermark">SAMPLE - FICTIONAL</span>
+      </div>
+      <div class="fc-number">0000 0000 0000 0000</div>
+      <div class="fc-bottom">
+        <span>CYBER MEMBER</span>
+        <span>SAMPLE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 9: Settings Gear -->
+  <button id="settings-gear" type="button" class="settings-gear" aria-label="Open settings" aria-haspopup="dialog" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+  </button>
+
+  <!-- PIN Unlock Modal -->
+  <div id="pin-backdrop" class="edit-backdrop" hidden>
+    <div id="pin-dialog" class="pin-dialog" role="dialog" aria-modal="true" aria-labelledby="pin-dialog-title">
+      <h2 id="pin-dialog-title" class="edit-title">Enter Owner PIN</h2>
+      <p class="note-box">Convenience lock for a local file only — not server-grade security.</p>
+      <div class="field-group">
+        <label for="pin-unlock-input" class="field-label-row">Owner PIN</label>
+        <input id="pin-unlock-input" type="password" inputmode="numeric" autocomplete="off" class="text-input" placeholder="Enter PIN">
+      </div>
+      <p id="pin-unlock-error" class="validation-msg is-error" hidden></p>
+      <div class="inline-actions">
+        <button id="pin-unlock-cancel" type="button" class="btn btn-secondary">Cancel</button>
+        <button id="pin-unlock-submit" type="button" class="btn btn-ghost">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Mode Panel -->
+  <div id="edit-backdrop" class="edit-backdrop" hidden>
+    <div id="edit-panel" class="edit-panel" role="dialog" aria-modal="true" aria-labelledby="edit-panel-title">
+      <div class="edit-drag-handle" aria-hidden="true"></div>
+      <div class="edit-header">
+        <h2 id="edit-panel-title" class="edit-title">Page Settings</h2>
+        <button id="edit-close-btn" type="button" class="edit-close-btn" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="edit-tabs" role="tablist" aria-label="Settings sections">
+        <button type="button" class="edit-tab is-active" role="tab" id="tab-btn-bg" aria-selected="true" aria-controls="pane-bg" data-tab="bg">Background</button>
+        <button type="button" class="edit-tab" role="tab" id="tab-btn-tg" aria-selected="false" aria-controls="pane-tg" data-tab="tg">Telegram</button>
+        <button type="button" class="edit-tab" role="tab" id="tab-btn-content" aria-selected="false" aria-controls="pane-content" data-tab="content">Content</button>
+        <button type="button" class="edit-tab" role="tab" id="tab-btn-style" aria-selected="false" aria-controls="pane-style" data-tab="style">Style</button>
+        <button type="button" class="edit-tab" role="tab" id="tab-btn-anim" aria-selected="false" aria-controls="pane-anim" data-tab="anim">Animation</button>
+        <button type="button" class="edit-tab" role="tab" id="tab-btn-data" aria-selected="false" aria-controls="pane-data" data-tab="data">Data</button>
+      </div>
+
+      <div class="edit-body">
+        <!-- Tab 1: Background -->
+        <div id="pane-bg" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-bg">
+          <div id="bg-dropzone" class="dropzone">
+            <input id="bg-file-input" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only">
+            <button id="bg-upload-btn" type="button" class="btn btn-ghost">Upload Background Image</button>
+            <p class="dropzone-hint">Drag &amp; drop or choose JPEG, PNG, or WebP (max 15 MB). Stored locally.</p>
+          </div>
+
+          <div class="inline-actions">
+            <button id="bg-replace-btn" type="button" class="btn btn-secondary">Replace image</button>
+            <button id="bg-reset-adj-btn" type="button" class="btn btn-secondary">Reset adjustments</button>
+            <button id="bg-remove-btn" type="button" class="btn btn-danger">Remove background</button>
+          </div>
+
+          <div class="field-group">
+            <label for="slider-bg-zoom" class="field-label-row">
+              <span>Zoom</span>
+              <span id="val-bg-zoom" class="field-value">100%</span>
+            </label>
+            <input id="slider-bg-zoom" type="range" min="100" max="300" step="1" class="range-input">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-bg-x" class="field-label-row">
+              <span>Position X</span>
+              <span id="val-bg-x" class="field-value">50%</span>
+            </label>
+            <input id="slider-bg-x" type="range" min="0" max="100" step="1" class="range-input">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-bg-y" class="field-label-row">
+              <span>Position Y</span>
+              <span id="val-bg-y" class="field-value">50%</span>
+            </label>
+            <input id="slider-bg-y" type="range" min="0" max="100" step="1" class="range-input">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-bg-brightness" class="field-label-row">
+              <span>Brightness</span>
+              <span id="val-bg-brightness" class="field-value">100%</span>
+            </label>
+            <input id="slider-bg-brightness" type="range" min="20" max="150" step="1" class="range-input">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-bg-blur" class="field-label-row">
+              <span>Blur</span>
+              <span id="val-bg-blur" class="field-value">0px</span>
+            </label>
+            <input id="slider-bg-blur" type="range" min="0" max="20" step="1" class="range-input">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-bg-overlay" class="field-label-row">
+              <span>Overlay Opacity</span>
+              <span id="val-bg-overlay" class="field-value">55%</span>
+            </label>
+            <input id="slider-bg-overlay" type="range" min="0" max="90" step="1" class="range-input">
+          </div>
+        </div>
+
+        <!-- Tab 2: Telegram -->
+        <div id="pane-tg" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-tg" hidden>
+          <div class="field-group">
+            <label for="input-tg-url" class="field-label-row">
+              <span>Telegram Destination URL</span>
+            </label>
+            <input id="input-tg-url" type="url" class="text-input" placeholder="https://t.me/igmaxtcc" autocomplete="off">
+            <p id="tg-url-status" class="validation-msg is-valid"></p>
+          </div>
+
+          <div class="inline-actions">
+            <button id="preview-dest-btn" type="button" class="btn btn-secondary">Preview destination</button>
+            <a id="test-link-btn" href="https://t.me/igmaxtcc" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Test link</a>
+          </div>
+          <div id="preview-url-box" class="preview-url-box" hidden></div>
+
+          <div class="field-group">
+            <label for="input-btn-text" class="field-label-row">
+              <span>Button Text</span>
+              <span id="val-btn-text-len" class="field-value">21/40</span>
+            </label>
+            <input id="input-btn-text" type="text" maxlength="40" class="text-input">
+          </div>
+
+          <div class="field-group">
+            <span class="field-label-row"><span>Button Color</span></span>
+            <div class="color-row">
+              <input id="input-btn-color" type="color" class="color-picker" aria-label="Button color picker">
+              <div id="btn-color-presets" class="color-presets"></div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label-row"><span>Button Size</span></span>
+            <div id="btn-size-group" class="segmented-group" role="group" aria-label="Button size">
+              <button type="button" class="seg-btn" data-size="small" aria-pressed="false">Small</button>
+              <button type="button" class="seg-btn" data-size="medium" aria-pressed="true">Medium</button>
+              <button type="button" class="seg-btn" data-size="large" aria-pressed="false">Large</button>
+            </div>
+          </div>
+
+          <label class="toggle-row" for="toggle-auto-redirect">
+            <span class="toggle-label">Auto-redirect enabled</span>
+            <input id="toggle-auto-redirect" type="checkbox" class="switch-input">
+          </label>
+
+          <div class="field-group">
+            <span class="field-label-row"><span>Countdown Duration</span></span>
+            <div id="countdown-group" class="segmented-group" role="group" aria-label="Countdown duration">
+              <button type="button" class="seg-btn" data-sec="3" aria-pressed="false">3s</button>
+              <button type="button" class="seg-btn" data-sec="5" aria-pressed="true">5s</button>
+              <button type="button" class="seg-btn" data-sec="10" aria-pressed="false">10s</button>
+              <button type="button" class="seg-btn" data-sec="15" aria-pressed="false">15s</button>
+            </div>
+          </div>
+
+          <button id="test-countdown-btn" type="button" class="btn btn-ghost">Test countdown</button>
+        </div>
+
+        <!-- Tab 3: Content -->
+        <div id="pane-content" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-content" hidden>
+          <div class="field-group">
+            <label for="input-heading" class="field-label-row">
+              <span>Main Heading</span>
+              <span id="val-heading-len" class="field-value">0/60</span>
+            </label>
+            <input id="input-heading" type="text" maxlength="60" class="text-input">
+          </div>
+
+          <div class="field-group">
+            <label for="input-subtitle" class="field-label-row">
+              <span>Subtitle</span>
+              <span id="val-subtitle-len" class="field-value">0/140</span>
+            </label>
+            <textarea id="input-subtitle" maxlength="140" class="text-input"></textarea>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label-row"><span>Logo / Profile Image (square crop, max 512px)</span></span>
+            <input id="logo-file-input" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only">
+            <div class="inline-actions">
+              <button id="logo-upload-btn" type="button" class="btn btn-ghost">Upload Logo</button>
+              <button id="logo-remove-btn" type="button" class="btn btn-danger">Remove logo</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="input-consent" class="field-label-row">
+              <span>Consent Notice</span>
+              <span id="val-consent-len" class="field-value">0/200</span>
+            </label>
+            <textarea id="input-consent" maxlength="200" class="text-input"></textarea>
+            <p class="note-box">The destination URL disclosure block always remains visible and cannot be disabled.</p>
+          </div>
+        </div>
+
+        <!-- Tab 4: Style -->
+        <div id="pane-style" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-style" hidden>
+          <div class="field-group">
+            <label for="input-neon-color" class="field-label-row">
+              <span>Neon Accent Color</span>
+              <span id="val-neon-color" class="field-value">#00FF75</span>
+            </label>
+            <input id="input-neon-color" type="color" class="color-picker">
+          </div>
+
+          <div class="field-group">
+            <label for="input-btn-text-color" class="field-label-row">
+              <span>Button Text Color</span>
+              <span id="val-btn-text-color" class="field-value">#041209</span>
+            </label>
+            <input id="input-btn-text-color" type="color" class="color-picker">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-card-blur" class="field-label-row">
+              <span>Card Backdrop Blur</span>
+              <span id="val-card-blur" class="field-value">14px</span>
+            </label>
+            <input id="slider-card-blur" type="range" min="0" max="28" step="1" class="range-input">
+          </div>
+
+          <div class="field-group">
+            <label for="slider-card-opacity" class="field-label-row">
+              <span>Card Surface Opacity</span>
+              <span id="val-card-opacity" class="field-value">62%</span>
+            </label>
+            <input id="slider-card-opacity" type="range" min="20" max="95" step="1" class="range-input">
+          </div>
+        </div>
+
+        <!-- Tab 5: Animation -->
+        <div id="pane-anim" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-anim" hidden>
+          <label class="toggle-row" for="toggle-anim-master">
+            <span class="toggle-label">Master Animations</span>
+            <input id="toggle-anim-master" type="checkbox" class="switch-input">
+          </label>
+          <label class="toggle-row" for="toggle-anim-matrix">
+            <span class="toggle-label">Matrix Rain</span>
+            <input id="toggle-anim-matrix" type="checkbox" class="switch-input">
+          </label>
+          <label class="toggle-row" for="toggle-anim-particles">
+            <span class="toggle-label">Particles</span>
+            <input id="toggle-anim-particles" type="checkbox" class="switch-input">
+          </label>
+          <label class="toggle-row" for="toggle-anim-cards">
+            <span class="toggle-label">Floating 3D Cards</span>
+            <input id="toggle-anim-cards" type="checkbox" class="switch-input">
+          </label>
+          <label class="toggle-row" for="toggle-anim-scanline">
+            <span class="toggle-label">Scanline Sweep</span>
+            <input id="toggle-anim-scanline" type="checkbox" class="switch-input">
+          </label>
+          <label class="toggle-row" for="toggle-anim-perf">
+            <span class="toggle-label">Performance Mode (lower particles &amp; 30 FPS)</span>
+            <input id="toggle-anim-perf" type="checkbox" class="switch-input">
+          </label>
+        </div>
+
+        <!-- Tab 6: Data -->
+        <div id="pane-data" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-data" hidden>
+          <p class="note-box">Settings are saved in this browser only. They are not shared across devices. For multi-device use, enable the optional cloud backend.</p>
+
+          <div class="inline-actions">
+            <button id="export-settings-btn" type="button" class="btn btn-secondary">Export Settings</button>
+            <button id="import-settings-btn" type="button" class="btn btn-secondary">Import Settings</button>
+            <input id="import-file-input" type="file" accept="application/json,.json" class="sr-only">
+          </div>
+
+          <div class="field-group">
+            <label for="input-pin-new" class="field-label-row">
+              <span>Optional Owner PIN (min 4 chars)</span>
+              <span id="pin-status-label" class="field-value">Not set</span>
+            </label>
+            <input id="input-pin-new" type="password" inputmode="numeric" autocomplete="off" class="text-input" placeholder="Enter new PIN">
+            <div class="inline-actions">
+              <button id="set-pin-btn" type="button" class="btn btn-ghost">Set PIN</button>
+              <button id="clear-pin-btn" type="button" class="btn btn-danger">Remove PIN</button>
+            </div>
+            <p class="note-box">Convenience protection for a local file only — not real server security.</p>
+          </div>
+
+          <button id="reset-all-btn" type="button" class="btn btn-danger">Reset All Settings</button>
+        </div>
+      </div>
+
+      <div class="edit-footer">
+        <div id="edit-confirm-bar" class="confirm-bar" hidden>
+          <span id="edit-confirm-msg">You have unsaved changes.</span>
+          <div class="inline-actions">
+            <button id="confirm-discard-btn" type="button" class="btn btn-danger">Discard</button>
+            <button id="confirm-save-btn" type="button" class="btn btn-ghost">Save</button>
+            <button id="confirm-stay-btn" type="button" class="btn btn-secondary">Stay</button>
+          </div>
+        </div>
+        <div class="edit-footer-row">
+          <button id="save-settings-btn" type="button" class="btn btn-ghost">Save Settings</button>
+          <button id="exit-edit-btn" type="button" class="btn btn-secondary">Exit Edit Mode</button>
+        </div>
+        <button id="reset-settings-footer-btn" type="button" class="btn btn-danger">Reset Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 9+: Boot Overlay -->
+  <div id="boot-overlay" class="boot-overlay" aria-live="polite">
+    <div class="boot-box">
+      <p class="boot-label">BOOTING...</p>
+      <div class="boot-track">
+        <div id="boot-fill" class="boot-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* ======================================================================
+       MODULE: Config
+       ====================================================================== */
+    const STORAGE_KEY = "cyberLanding.settings.v1";
+    const DB_NAME = "cyberLanding";
+    const DB_STORE = "images";
+    const DEFAULT_EXAMPLE_URL = "https://t.me/yourchannel";
+    const DEFAULT_TELEGRAM_URL = "https://t.me/igmaxtcc";
+    const NEON_PRESETS = ["#00FF75", "#00E5FF", "#38BDF8", "#A3FF12", "#FFB800", "#FF3B81"];
+
+    /**
+     * Returns a deep-cloned default settings object respecting prefers-reduced-motion.
+     * @param {boolean} reducedMotion - Whether OS reduced motion is preferred.
+     * @returns {object} Default settings structure.
+     */
+    function getDefaultSettings(reducedMotion) {
+      const animOn = !reducedMotion;
+      return {
+        version: 1,
+        telegramUrl: DEFAULT_TELEGRAM_URL,
+        buttonText: "Join Telegram Channel",
+        buttonColor: "#00FF75",
+        buttonTextColor: "#041209",
+        buttonSize: "medium",
+        autoRedirect: true,
+        countdown: 5,
+        heading: "Join Our Cyber Security Community",
+        subtitle: "Learn. Share. Secure. Legal tech and cybersecurity discussions on Telegram.",
+        consentText: "By continuing you will leave this page and open Telegram. This page does not collect your data.",
+        style: {
+          neonColor: "#00FF75",
+          cardBlur: 14,
+          cardOpacity: 62
+        },
+        background: {
+          zoom: 100,
+          posX: 50,
+          posY: 50,
+          brightness: 100,
+          blur: 0,
+          overlayOpacity: 55
+        },
+        animations: {
+          master: animOn,
+          matrix: true,
+          particles: true,
+          cards: true,
+          scanline: true,
+          performanceMode: false
+        },
+        pinAuth: null
+      };
+    }
+
+    const Config = {
+      STORAGE_KEY,
+      DB_NAME,
+      DB_STORE,
+      DEFAULT_EXAMPLE_URL,
+      DEFAULT_TELEGRAM_URL,
+      NEON_PRESETS,
+      getDefaultSettings
+    };
+
+    /* ======================================================================
+       MODULE: Validators
+       ====================================================================== */
+    /**
+     * Clamps a numeric value between min and max, returning fallback if NaN.
+     * @param {*} val - Input value.
+     * @param {number} min - Minimum bound.
+     * @param {number} max - Maximum bound.
+     * @param {number} fallback - Fallback value.
+     * @returns {number} Clamped number.
+     */
+    function clampNumber(val, min, max, fallback) {
+      const n = Number(val);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, Math.round(n)));
+    }
+
+    /**
+     * Validates a 6-digit hex color string.
+     * @param {*} color - Candidate color.
+     * @param {string} fallback - Fallback hex color.
+     * @returns {string} Normalized uppercase hex color.
+     */
+    function sanitizeHexColor(color, fallback) {
+      if (typeof color !== "string") return fallback;
+      const trimmed = color.trim();
+      return /^#[0-9A-Fa-f]{6}$/.test(trimmed) ? trimmed.toUpperCase() : fallback;
+    }
+
+    /**
+     * Truncates and strips control chars from user text.
+     * @param {*} str - Raw string.
+     * @param {number} maxLen - Max length.
+     * @param {string} fallback - Fallback if invalid/empty.
+     * @returns {string} Clean string.
+     */
+    function sanitizeText(str, maxLen, fallback) {
+      if (typeof str !== "string") return fallback;
+      const cleaned = str.replace(/[\u0000-\u001F\u007F]/g, "").trim();
+      if (!cleaned) return fallback;
+      return cleaned.slice(0, maxLen);
+    }
+
+    /**
+     * Validates and normalizes an HTTPS Telegram destination URL.
+     * @param {string} rawInput - Candidate URL entered by user or loaded from storage.
+     * @returns {{valid: boolean, normalized: string, error: string, isExample: boolean}} Validation outcome.
+     */
+    function validateTelegramUrl(rawInput) {
+      if (typeof rawInput !== "string") {
+        return { valid: false, normalized: "", error: "URL must be a text string.", isExample: false };
+      }
+
+      const stripped = rawInput.replace(/[\u200B-\u200D\uFEFF\u00AD\u2060]/g, "").trim();
+      if (!stripped) {
+        return { valid: false, normalized: "", error: "Please enter a Telegram URL.", isExample: false };
+      }
+
+      const lower = stripped.toLowerCase();
+      if (lower.startsWith("javascript:") || lower.startsWith("data:") || lower.startsWith("vbscript:")) {
+        return { valid: false, normalized: "", error: "Blocked unsafe URL scheme.", isExample: false };
+      }
+      if (lower.startsWith("tg:")) {
+        return { valid: false, normalized: "", error: "Direct tg:// schemes are blocked; use https://t.me/...", isExample: false };
+      }
+      if (lower.startsWith("http://")) {
+        return { valid: false, normalized: "", error: "Insecure http:// links are rejected; use https://.", isExample: false };
+      }
+      if (!lower.startsWith("https://")) {
+        return { valid: false, normalized: "", error: "URL must begin with https://t.me/ or https://telegram.me/.", isExample: false };
+      }
+      if (/[^\x20-\x7E]/.test(stripped)) {
+        return { valid: false, normalized: "", error: "Unicode homographs or non-ASCII characters are not allowed.", isExample: false };
+      }
+
+      let parsed;
+      try {
+        parsed = new URL(stripped);
+      } catch (e) {
+        return { valid: false, normalized: "", error: "Malformed URL syntax.", isExample: false };
+      }
+
+      if (parsed.protocol !== "https:") {
+        return { valid: false, normalized: "", error: "Only https:// protocol is permitted.", isExample: false };
+      }
+      if (parsed.username || parsed.password) {
+        return { valid: false, normalized: "", error: "User credentials inside URL are not allowed.", isExample: false };
+      }
+      if (parsed.port) {
+        return { valid: false, normalized: "", error: "Custom ports are not allowed.", isExample: false };
+      }
+
+      const host = parsed.hostname.toLowerCase();
+      if (host.includes("xn--")) {
+        return { valid: false, normalized: "", error: "Punycode domains are not allowed.", isExample: false };
+      }
+      if (host !== "t.me" && host !== "telegram.me") {
+        return { valid: false, normalized: "", error: "Hostname must be exactly t.me or telegram.me.", isExample: false };
+      }
+
+      if (parsed.search || parsed.hash) {
+        return { valid: false, normalized: "", error: "Query strings and hash redirects are not allowed.", isExample: false };
+      }
+
+      const cleanPath = parsed.pathname.replace(/\/+$/, "");
+      const channelRe = /^\/[a-zA-Z][a-zA-Z0-9_]{4,31}(?:\/\d+)?$/;
+      const plusInviteRe = /^\/\+[a-zA-Z0-9_-]{8,64}(?:\/\d+)?$/;
+      const joinchatRe = /^\/joinchat\/[a-zA-Z0-9_-]{8,64}(?:\/\d+)?$/;
+
+      if (!channelRe.test(cleanPath) && !plusInviteRe.test(cleanPath) && !joinchatRe.test(cleanPath)) {
+        return {
+          valid: false,
+          normalized: "",
+          error: "Path must be /channelname (5-32 chars), /+inviteHash, or /joinchat/hash.",
+          isExample: false
+        };
+      }
+
+      const normalized = "https://" + host + cleanPath;
+      return {
+        valid: true,
+        normalized,
+        error: "",
+        isExample: normalized === DEFAULT_EXAMPLE_URL
+      };
+    }
+
+    /**
+     * Migrates and validates any loaded or imported settings object against defaults.
+     * @param {*} raw - Raw parsed JSON object.
+     * @param {boolean} reducedMotion - OS reduced motion flag.
+     * @returns {object} Sanitized complete settings object.
+     */
+    function migrateSettings(raw, reducedMotion) {
+      const def = getDefaultSettings(reducedMotion);
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        return def;
+      }
+
+      const urlCheck = validateTelegramUrl(raw.telegramUrl);
+      const validSizes = ["small", "medium", "large"];
+      const validCountdowns = [3, 5, 10, 15];
+      const bg = raw.background && typeof raw.background === "object" ? raw.background : {};
+      const st = raw.style && typeof raw.style === "object" ? raw.style : {};
+      const an = raw.animations && typeof raw.animations === "object" ? raw.animations : {};
+
+      let pinAuth = null;
+      if (
+        raw.pinAuth &&
+        typeof raw.pinAuth === "object" &&
+        typeof raw.pinAuth.salt === "string" &&
+        typeof raw.pinAuth.hash === "string" &&
+        /^[0-9a-f]{32}$/i.test(raw.pinAuth.salt) &&
+        /^[0-9a-f]{64}$/i.test(raw.pinAuth.hash)
+      ) {
+        pinAuth = { salt: raw.pinAuth.salt, hash: raw.pinAuth.hash };
+      }
+
+      return {
+        version: 1,
+        telegramUrl: urlCheck.valid ? urlCheck.normalized : def.telegramUrl,
+        buttonText: sanitizeText(raw.buttonText, 40, def.buttonText),
+        buttonColor: sanitizeHexColor(raw.buttonColor, def.buttonColor),
+        buttonTextColor: sanitizeHexColor(raw.buttonTextColor, def.buttonTextColor),
+        buttonSize: validSizes.includes(raw.buttonSize) ? raw.buttonSize : def.buttonSize,
+        autoRedirect: typeof raw.autoRedirect === "boolean" ? raw.autoRedirect : def.autoRedirect,
+        countdown: validCountdowns.includes(Number(raw.countdown)) ? Number(raw.countdown) : def.countdown,
+        heading: sanitizeText(raw.heading, 60, def.heading),
+        subtitle: sanitizeText(raw.subtitle, 140, def.subtitle),
+        consentText: sanitizeText(raw.consentText, 200, def.consentText),
+        style: {
+          neonColor: sanitizeHexColor(st.neonColor, def.style.neonColor),
+          cardBlur: clampNumber(st.cardBlur, 0, 28, def.style.cardBlur),
+          cardOpacity: clampNumber(st.cardOpacity, 20, 95, def.style.cardOpacity)
+        },
+        background: {
+          zoom: clampNumber(bg.zoom, 100, 300, def.background.zoom),
+          posX: clampNumber(bg.posX, 0, 100, def.background.posX),
+          posY: clampNumber(bg.posY, 0, 100, def.background.posY),
+          brightness: clampNumber(bg.brightness, 20, 150, def.background.brightness),
+          blur: clampNumber(bg.blur, 0, 20, def.background.blur),
+          overlayOpacity: clampNumber(bg.overlayOpacity, 0, 90, def.background.overlayOpacity)
+        },
+        animations: {
+          master: typeof an.master === "boolean" ? an.master : def.animations.master,
+          matrix: typeof an.matrix === "boolean" ? an.matrix : def.animations.matrix,
+          particles: typeof an.particles === "boolean" ? an.particles : def.animations.particles,
+          cards: typeof an.cards === "boolean" ? an.cards : def.animations.cards,
+          scanline: typeof an.scanline === "boolean" ? an.scanline : def.animations.scanline,
+          performanceMode: typeof an.performanceMode === "boolean" ? an.performanceMode : def.animations.performanceMode
+        },
+        pinAuth
+      };
+    }
+
+    const Validators = {
+      clampNumber,
+      sanitizeHexColor,
+      sanitizeText,
+      validateTelegramUrl,
+      migrateSettings
+    };
+
+    /* ======================================================================
+       MODULE: Storage
+       ====================================================================== */
+    const Storage = (function () {
+      let memoryFallback = null;
+      let storageWarningShown = false;
+
+      /**
+       * Shows a one-time warning when browser storage is unavailable.
+       * @param {string} msg - Warning text.
+       */
+      function warnStorage(msg) {
+        if (!storageWarningShown && typeof showToast === "function") {
+          storageWarningShown = true;
+          showToast(msg, true);
+        }
+      }
+
+      /**
+       * Loads and validates settings from localStorage.
+       * @param {boolean} reducedMotion - OS reduced motion flag.
+       * @returns {object} Validated settings.
+       */
+      function loadSettings(reducedMotion) {
+        try {
+          const rawStr = window.localStorage.getItem(STORAGE_KEY);
+          if (!rawStr) {
+            return memoryFallback ? migrateSettings(memoryFallback, reducedMotion) : getDefaultSettings(reducedMotion);
+          }
+          const parsed = JSON.parse(rawStr);
+          return migrateSettings(parsed, reducedMotion);
+        } catch (err) {
+          warnStorage("Browser storage unavailable; using in-memory settings.");
+          return memoryFallback ? migrateSettings(memoryFallback, reducedMotion) : getDefaultSettings(reducedMotion);
+        }
+      }
+
+      /**
+       * Saves validated settings into localStorage with quota/privacy fallback.
+       * @param {object} settings - Settings object to save.
+       * @returns {boolean} True if persisted to localStorage.
+       */
+      function saveSettings(settings) {
+        const clean = migrateSettings(settings, false);
+        memoryFallback = clean;
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+          return true;
+        } catch (err) {
+          warnStorage("Could not write to localStorage (private mode or quota full). Changes kept in memory.");
+          return false;
+        }
+      }
+
+      /**
+       * Clears settings from localStorage and memory.
+       * @returns {void}
+       */
+      function clearSettings() {
+        memoryFallback = null;
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch (err) {
+          /* ignore */
+        }
+      }
+
+      /**
+       * Opens the IndexedDB database for binary image blobs.
+       * @returns {Promise<IDBDatabase>} Open database promise.
+       */
+      function openDb() {
+        return new Promise((resolve, reject) => {
+          if (!("indexedDB" in window)) {
+            reject(new Error("IndexedDB unavailable"));
+            return;
+          }
+          try {
+            const req = window.indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = function () {
+              const db = req.result;
+              if (!db.objectStoreNames.contains(DB_STORE)) {
+                db.createObjectStore(DB_STORE);
+              }
+            };
+            req.onsuccess = function () {
+              resolve(req.result);
+            };
+            req.onerror = function () {
+              reject(req.error || new Error("IndexedDB open failed"));
+            };
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+
+      /**
+       * Stores a Blob under key ("background" or "logo") in IndexedDB.
+       * @param {string} key - Store key.
+       * @param {Blob} blob - Image blob.
+       * @returns {Promise<boolean>} Success flag.
+       */
+      async function saveImageBlob(key, blob) {
+        try {
+          const db = await openDb();
+          return await new Promise((resolve) => {
+            const tx = db.transaction(DB_STORE, "readwrite");
+            tx.objectStore(DB_STORE).put(blob, key);
+            tx.oncomplete = () => { db.close(); resolve(true); };
+            tx.onerror = () => { db.close(); resolve(false); };
+          });
+        } catch (err) {
+          warnStorage("Image persistence unavailable in this browser mode.");
+          return false;
+        }
+      }
+
+      /**
+       * Loads a Blob from IndexedDB by key.
+       * @param {string} key - Store key.
+       * @returns {Promise<Blob|null>} Stored blob or null.
+       */
+      async function loadImageBlob(key) {
+        try {
+          const db = await openDb();
+          return await new Promise((resolve) => {
+            const tx = db.transaction(DB_STORE, "readonly");
+            const req = tx.objectStore(DB_STORE).get(key);
+            req.onsuccess = () => { db.close(); resolve(req.result || null); };
+            req.onerror = () => { db.close(); resolve(null); };
+          });
+        } catch (err) {
+          return null;
+        }
+      }
+
+      /**
+       * Deletes a stored image blob from IndexedDB.
+       * @param {string} key - Store key.
+       * @returns {Promise<void>}
+       */
+      async function deleteImageBlob(key) {
+        try {
+          const db = await openDb();
+          await new Promise((resolve) => {
+            const tx = db.transaction(DB_STORE, "readwrite");
+            tx.objectStore(DB_STORE).delete(key);
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => { db.close(); resolve(); };
+          });
+        } catch (err) {
+          /* ignore */
+        }
+      }
+
+      /**
+       * Computes salted SHA-256 hex digest using Web Crypto API.
+       * @param {string} pin - Plaintext PIN.
+       * @param {string} saltHex - 32-char hex salt.
+       * @returns {Promise<string>} 64-char hex digest.
+       */
+      async function hashPin(pin, saltHex) {
+        const enc = new TextEncoder();
+        const data = enc.encode(saltHex + ":" + pin);
+        const buf = await window.crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(buf))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      /**
+       * Generates a random 16-byte hex salt.
+       * @returns {string} Hex salt string.
+       */
+      function createSaltHex() {
+        const arr = new Uint8Array(16);
+        window.crypto.getRandomValues(arr);
+        return Array.from(arr)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      return {
+        loadSettings,
+        saveSettings,
+        clearSettings,
+        saveImageBlob,
+        loadImageBlob,
+        deleteImageBlob,
+        hashPin,
+        createSaltHex
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: ImageTools
+       ====================================================================== */
+    const ImageTools = (function () {
+      const MAX_BYTES = 15 * 1024 * 1024;
+      const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
+      const ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
+
+      /**
+       * Checks magic bytes header of an image buffer against JPEG, PNG, and WebP signatures.
+       * @param {Uint8Array} bytes - First 12+ bytes of file.
+       * @returns {string|null} Detected format ('jpeg' | 'png' | 'webp') or null.
+       */
+      function detectSignature(bytes) {
+        if (!bytes || bytes.length < 12) return null;
+        if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+          return "jpeg";
+        }
+        if (
+          bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47 &&
+          bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A
+        ) {
+          return "png";
+        }
+        if (
+          bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+          bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+        ) {
+          return "webp";
+        }
+        return null;
+      }
+
+      /**
+       * Validates file size, extension, MIME type, and real magic-byte signature.
+       * @param {File} file - Selected image file.
+       * @returns {Promise<{valid: boolean, error: string}>} Validation result.
+       */
+      async function validateImageFile(file) {
+        if (!file) return { valid: false, error: "No file selected." };
+        if (file.size === 0) return { valid: false, error: "File is empty." };
+        if (file.size > MAX_BYTES) {
+          return { valid: false, error: "Image exceeds 15 MB limit." };
+        }
+        const nameLower = (file.name || "").toLowerCase();
+        if (!ALLOWED_EXTS.some((ext) => nameLower.endsWith(ext))) {
+          return { valid: false, error: "Unsupported file extension. Use JPG, PNG, or WebP." };
+        }
+        if (!ALLOWED_MIMES.includes(file.type)) {
+          return { valid: false, error: "Unsupported MIME type. Use JPEG, PNG, or WebP." };
+        }
+        const headerBuf = await file.slice(0, 12).arrayBuffer();
+        const sig = detectSignature(new Uint8Array(headerBuf));
+        if (!sig) {
+          return { valid: false, error: "Invalid image signature (magic bytes mismatch)." };
+        }
+        return { valid: true, error: "" };
+      }
+
+      /**
+       * Decodes, optionally square-crops, downscales, and exports an image as compressed WebP/JPEG Blob.
+       * @param {File} file - Validated image file.
+       * @param {{maxSide: number, squareCrop: boolean}} options - Processing options.
+       * @returns {Promise<Blob>} Compressed output Blob.
+       */
+      async function processImage(file, options) {
+        const validation = await validateImageFile(file);
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        let bitmap;
+        if (typeof window.createImageBitmap === "function") {
+          try {
+            bitmap = await window.createImageBitmap(file, { imageOrientation: "from-image" });
+          } catch (err) {
+            bitmap = await window.createImageBitmap(file);
+          }
+        } else {
+          throw new Error("Image decoding not supported in this browser.");
+        }
+
+        try {
+          const srcW = bitmap.width;
+          const srcH = bitmap.height;
+          let sx = 0;
+          let sy = 0;
+          let sw = srcW;
+          let sh = srcH;
+
+          if (options.squareCrop) {
+            const minSide = Math.min(srcW, srcH);
+            sx = Math.floor((srcW - minSide) / 2);
+            sy = Math.floor((srcH - minSide) / 2);
+            sw = minSide;
+            sh = minSide;
+          }
+
+          const longSide = Math.max(sw, sh);
+          const scale = longSide > options.maxSide ? options.maxSide / longSide : 1;
+          const dstW = Math.max(1, Math.round(sw * scale));
+          const dstH = Math.max(1, Math.round(sh * scale));
+
+          const canvas = document.createElement("canvas");
+          canvas.width = dstW;
+          canvas.height = dstH;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Canvas 2D context unavailable.");
+          ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, dstW, dstH);
+
+          const blob = await new Promise((resolve) => {
+            canvas.toBlob((b) => {
+              if (b && b.type === "image/webp") {
+                resolve(b);
+              } else {
+                canvas.toBlob((jb) => resolve(jb), "image/jpeg", 0.85);
+              }
+            }, "image/webp", 0.85);
+          });
+
+          if (!blob) throw new Error("Failed to compress image.");
+          return blob;
+        } finally {
+          if (bitmap && typeof bitmap.close === "function") {
+            bitmap.close();
+          }
+        }
+      }
+
+      return {
+        detectSignature,
+        validateImageFile,
+        processImage
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: Background
+       ====================================================================== */
+    const Background = (function () {
+      let currentBgUrl = null;
+      let currentLogoUrl = null;
+
+      /**
+       * Applies background image URL (if any) and visual adjustment settings.
+       * @param {object} bgSettings - Background adjustment config.
+       * @param {Blob|null} blob - Optional image blob.
+       * @returns {void}
+       */
+      function applyBackground(bgSettings, blob) {
+        const bgEl = document.getElementById("bg-layer");
+        const overlayEl = document.getElementById("overlay-layer");
+
+        if (blob !== undefined) {
+          if (currentBgUrl) {
+            URL.revokeObjectURL(currentBgUrl);
+            currentBgUrl = null;
+          }
+          if (blob) {
+            currentBgUrl = URL.createObjectURL(blob);
+            bgEl.style.backgroundImage = 'url("' + currentBgUrl + '")';
+            bgEl.classList.add("has-image");
+          } else {
+            bgEl.style.backgroundImage = "none";
+            bgEl.classList.remove("has-image");
+          }
+        }
+
+        const scale = (bgSettings.zoom / 100).toFixed(2);
+        bgEl.style.backgroundPosition = bgSettings.posX + "% " + bgSettings.posY + "%";
+        bgEl.style.transform = "scale(" + scale + ")";
+        bgEl.style.filter = "brightness(" + bgSettings.brightness + "%) blur(" + bgSettings.blur + "px)";
+
+        const alpha = (bgSettings.overlayOpacity / 100).toFixed(2);
+        overlayEl.style.background =
+          "radial-gradient(circle at 50% 35%, rgba(5, 8, 6, " + (alpha * 0.65).toFixed(2) + "), rgba(5, 8, 6, " + alpha + "))";
+        overlayEl.style.backgroundColor = "rgba(5, 8, 6, " + alpha + ")";
+      }
+
+      /**
+       * Applies or removes the custom circular logo emblem.
+       * @param {Blob|null} blob - Logo blob or null to restore inline SVG.
+       * @returns {void}
+       */
+      function applyLogo(blob) {
+        const svgEl = document.getElementById("default-logo-svg");
+        const imgEl = document.getElementById("custom-logo-img");
+        if (currentLogoUrl) {
+          URL.revokeObjectURL(currentLogoUrl);
+          currentLogoUrl = null;
+        }
+        if (blob) {
+          currentLogoUrl = URL.createObjectURL(blob);
+          imgEl.src = currentLogoUrl;
+          imgEl.hidden = false;
+          svgEl.hidden = true;
+        } else {
+          imgEl.removeAttribute("src");
+          imgEl.hidden = true;
+          svgEl.hidden = false;
+        }
+      }
+
+      return {
+        applyBackground,
+        applyLogo
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: MatrixRain
+       ====================================================================== */
+    const MatrixRain = (function () {
+      const canvas = document.getElementById("matrix-canvas");
+      const ctx = canvas.getContext("2d");
+      const CHARS = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF";
+      let width = 0;
+      let height = 0;
+      let fontSize = 15;
+      let cachedFont = "15px monospace";
+      let drops = [];
+      let speeds = [];
+      let enabled = true;
+      let neonHex = "#00FF75";
+      let lastDrawMs = 0;
+
+      /**
+       * Recomputes canvas dimensions and column drops on resize.
+       * @returns {void}
+       */
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        fontSize = width < 480 ? 14 : 16;
+        const mono = getComputedStyle(document.documentElement).getPropertyValue("--font-mono").trim() || "monospace";
+        cachedFont = fontSize + "px " + mono;
+        const cols = Math.max(1, Math.floor(width / fontSize));
+        drops = new Array(cols);
+        speeds = new Array(cols);
+        for (let i = 0; i < cols; i++) {
+          drops[i] = Math.random() * (height / fontSize);
+          speeds[i] = 0.45 + Math.random() * 0.75;
+        }
+      }
+
+      /**
+       * Sets active state and accent color.
+       * @param {boolean} isEnabled - Whether Matrix rain renders.
+       * @param {string} hex - Neon accent hex color.
+       * @returns {void}
+       */
+      function configure(isEnabled, hex) {
+        enabled = isEnabled;
+        neonHex = hex || "#00FF75";
+        if (!enabled) {
+          ctx.clearRect(0, 0, width, height);
+        }
+      }
+
+      /**
+       * Renders a single animation frame of Matrix rain.
+       * @param {number} nowMs - Timestamp in milliseconds.
+       * @returns {void}
+       */
+      function draw(nowMs) {
+        if (!enabled) return;
+        if (nowMs && nowMs - lastDrawMs < 33) return;
+        lastDrawMs = nowMs || 0;
+        ctx.fillStyle = "rgba(5, 8, 6, 0.08)";
+        ctx.fillRect(0, 0, width, height);
+        ctx.font = cachedFont;
+
+        for (let i = 0; i < drops.length; i++) {
+          const ch = CHARS.charAt(Math.floor(Math.random() * CHARS.length));
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+
+          // Brighter head glyph
+          ctx.fillStyle = "#E4FFF0";
+          ctx.globalAlpha = 0.85;
+          ctx.fillText(ch, x, y);
+
+          // Trailing glyph accent
+          ctx.fillStyle = neonHex;
+          ctx.globalAlpha = 0.25 + Math.random() * 0.45;
+          ctx.fillText(CHARS.charAt(Math.floor(Math.random() * CHARS.length)), x, y - fontSize);
+
+          ctx.globalAlpha = 1;
+
+          if (y > height && Math.random() > 0.972) {
+            drops[i] = 0;
+          } else {
+            drops[i] += speeds[i];
+          }
+        }
+      }
+
+      return {
+        resize,
+        configure,
+        draw
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: Particles
+       ====================================================================== */
+    const Particles = (function () {
+      const canvas = document.getElementById("particles-canvas");
+      const ctx = canvas.getContext("2d");
+      let width = 0;
+      let height = 0;
+      let items = [];
+      let enabled = true;
+      let perfMode = false;
+      let neonHex = "#00FF75";
+
+      /**
+       * Populates particle nodes sized for mobile or desktop and performance mode.
+       * @returns {void}
+       */
+      function populate() {
+        const isDesktop = width >= 768;
+        let count = isDesktop ? 80 : 40;
+        if (perfMode) count = Math.floor(count * 0.5);
+
+        items = new Array(count);
+        for (let i = 0; i < count; i++) {
+          items[i] = {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: 1 + Math.random() * 1.8,
+            vy: 0.25 + Math.random() * 0.55,
+            vx: (Math.random() - 0.5) * 0.25,
+            phase: Math.random() * Math.PI * 2
+          };
+        }
+      }
+
+      /**
+       * Resizes particle canvas cleanly up to 2x DPR.
+       * @returns {void}
+       */
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        populate();
+      }
+
+      /**
+       * Configures particle visibility, performance mode, and accent color.
+       * @param {boolean} isEnabled - Active flag.
+       * @param {boolean} isPerf - Performance mode flag.
+       * @param {string} hex - Accent hex color.
+       * @returns {void}
+       */
+      function configure(isEnabled, isPerf, hex) {
+        const needRepopulate = perfMode !== isPerf;
+        enabled = isEnabled;
+        perfMode = isPerf;
+        neonHex = hex || "#00FF75";
+        if (!enabled) {
+          ctx.clearRect(0, 0, width, height);
+        } else if (needRepopulate && width > 0) {
+          populate();
+        }
+      }
+
+      /**
+       * Advances and draws particles with twinkle and optional desktop linking lines.
+       * @param {number} nowMs - Timestamp in milliseconds.
+       * @returns {void}
+       */
+      function draw(nowMs) {
+        if (!enabled) return;
+        ctx.clearRect(0, 0, width, height);
+        const isDesktop = width >= 768 && !perfMode;
+        const t = nowMs * 0.002;
+
+        for (let i = 0; i < items.length; i++) {
+          const p = items[i];
+          p.y -= p.vy;
+          p.x += p.vx;
+          if (p.y < -8) {
+            p.y = height + 8;
+            p.x = Math.random() * width;
+          }
+          if (p.x < -8) p.x = width + 8;
+          if (p.x > width + 8) p.x = -8;
+
+          const twinkle = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(t + p.phase));
+          ctx.fillStyle = neonHex;
+          ctx.globalAlpha = twinkle;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (isDesktop) {
+            for (let j = i + 1; j < items.length; j++) {
+              const q = items[j];
+              const dx = p.x - q.x;
+              const dy = p.y - q.y;
+              const distSq = dx * dx + dy * dy;
+              if (distSq < 8100) {
+                ctx.strokeStyle = neonHex;
+                ctx.globalAlpha = 0.09 * (1 - distSq / 8100);
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(q.x, q.y);
+                ctx.stroke();
+              }
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      return {
+        resize,
+        configure,
+        draw
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: Terminal
+       ====================================================================== */
+    const Terminal = (function () {
+      const container = document.getElementById("terminal-lines");
+      let timerId = null;
+
+      /**
+       * Formats the 4 terminal boot lines using the real destination URL.
+       * @param {string} url - Normalized Telegram URL.
+       * @returns {string[]} Array of 4 lines.
+       */
+      function buildLines(url) {
+        const displayDest = url.replace(/^https:\/\//, "");
+        return [
+          "> initializing secure channel...",
+          "> verifying destination: " + displayDest,
+          "> encryption: ready",
+          "> status: waiting for you"
+        ];
+      }
+
+      /**
+       * Stops any running typewriter timer.
+       * @returns {void}
+       */
+      function stop() {
+        if (timerId !== null) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+      }
+
+      /**
+       * Renders terminal lines either instantaneously or with typewriter animation.
+       * @param {string} url - Validated destination URL.
+       * @param {boolean} animate - True to animate typing, false for instant render.
+       * @returns {void}
+       */
+      function render(url, animate) {
+        stop();
+        const lines = buildLines(url);
+        container.textContent = "";
+
+        const cursor = document.createElement("span");
+        cursor.className = "terminal-cursor";
+        cursor.setAttribute("aria-hidden", "true");
+
+        if (!animate) {
+          container.textContent = lines.join("\n");
+          container.appendChild(cursor);
+          return;
+        }
+
+        let lineIdx = 0;
+        let charIdx = 0;
+        let currentText = "";
+        const textNode = document.createTextNode("");
+        container.appendChild(textNode);
+        container.appendChild(cursor);
+
+        function tick() {
+          if (lineIdx >= lines.length) {
+            timerId = null;
+            return;
+          }
+          const line = lines[lineIdx];
+          if (charIdx < line.length) {
+            currentText += line.charAt(charIdx);
+            textNode.nodeValue = currentText;
+            charIdx += 1;
+            timerId = setTimeout(tick, 28);
+          } else {
+            lineIdx += 1;
+            charIdx = 0;
+            if (lineIdx < lines.length) {
+              currentText += "\n";
+              textNode.nodeValue = currentText;
+              timerId = setTimeout(tick, 400);
+            } else {
+              timerId = null;
+            }
+          }
+        }
+
+        timerId = setTimeout(tick, 60);
+      }
+
+      return {
+        render,
+        stop
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: Countdown
+       ====================================================================== */
+    const Countdown = (function () {
+      const CIRCUMFERENCE = 2 * Math.PI * 36;
+      let totalMs = 5000;
+      let remainingMs = 5000;
+      let lastTickPerf = 0;
+      let intervalId = null;
+      let paused = false;
+      let announcedThree = false;
+      let onCompleteCb = null;
+      let onUpdateCb = null;
+      let onAnnounceCb = null;
+
+      /**
+       * Computes remaining milliseconds and ring progress ratio from timestamps.
+       * @param {number} remMs - Remaining ms.
+       * @param {number} totMs - Total ms.
+       * @returns {{secondsLeft: number, offset: number}} Display seconds and SVG dashoffset.
+       */
+      function computeDisplay(remMs, totMs) {
+        const clamped = Math.max(0, remMs);
+        const secondsLeft = Math.ceil(clamped / 1000);
+        const fraction = totMs > 0 ? clamped / totMs : 0;
+        const offset = CIRCUMFERENCE * (1 - fraction);
+        return { secondsLeft, offset };
+      }
+
+      /**
+       * Starts an accurate timestamp-based countdown.
+       * @param {number} seconds - Initial duration in seconds.
+       * @param {{onUpdate: Function, onAnnounce: Function, onComplete: Function}} callbacks - Lifecycle hooks.
+       * @returns {void}
+       */
+      function start(seconds, callbacks) {
+        stop();
+        totalMs = Math.max(1, seconds) * 1000;
+        remainingMs = totalMs;
+        paused = false;
+        announcedThree = seconds <= 3;
+        onUpdateCb = callbacks.onUpdate;
+        onAnnounceCb = callbacks.onAnnounce;
+        onCompleteCb = callbacks.onComplete;
+        lastTickPerf = performance.now();
+
+        if (onAnnounceCb) {
+          onAnnounceCb("Opening Telegram in " + seconds + " seconds.");
+        }
+        if (onUpdateCb) {
+          onUpdateCb(computeDisplay(remainingMs, totalMs));
+        }
+
+        intervalId = setInterval(step, 100);
+      }
+
+      /**
+       * Advances elapsed time using performance.now() delta.
+       * @returns {void}
+       */
+      function step() {
+        if (paused) return;
+        const now = performance.now();
+        const delta = now - lastTickPerf;
+        lastTickPerf = now;
+        remainingMs = Math.max(0, remainingMs - delta);
+
+        const display = computeDisplay(remainingMs, totalMs);
+        if (onUpdateCb) onUpdateCb(display);
+
+        if (!announcedThree && display.secondsLeft === 3) {
+          announcedThree = true;
+          if (onAnnounceCb) onAnnounceCb("3 seconds remaining.");
+        }
+
+        if (remainingMs <= 0) {
+          stop();
+          if (onAnnounceCb) onAnnounceCb("Opening Telegram now.");
+          if (onCompleteCb) onCompleteCb();
+        }
+      }
+
+      /**
+       * Pauses the countdown while preserving remaining time.
+       * @returns {void}
+       */
+      function pause() {
+        if (intervalId !== null && !paused) {
+          const now = performance.now();
+          remainingMs = Math.max(0, remainingMs - (now - lastTickPerf));
+          paused = true;
+        }
+      }
+
+      /**
+       * Resumes a paused countdown cleanly from remaining time.
+       * @returns {void}
+       */
+      function resume() {
+        if (intervalId !== null && paused) {
+          lastTickPerf = performance.now();
+          paused = false;
+        }
+      }
+
+      /**
+       * Stops and clears the countdown timer.
+       * @returns {void}
+       */
+      function stop() {
+        if (intervalId !== null) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+        paused = false;
+      }
+
+      return {
+        CIRCUMFERENCE,
+        computeDisplay,
+        start,
+        pause,
+        resume,
+        stop
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: Redirect
+       ====================================================================== */
+    const Redirect = (function () {
+      /**
+       * Re-validates the destination URL at redirect time and navigates via location.assign.
+       * @param {string} url - Candidate Telegram URL.
+       * @param {{onBeforeNavigate: Function, onError: Function}} hooks - UI hooks.
+       * @returns {boolean} True if validation passed and navigation was triggered.
+       */
+      function execute(url, hooks) {
+        const check = Validators.validateTelegramUrl(url);
+        if (!check.valid) {
+          if (hooks && hooks.onError) hooks.onError(check.error);
+          return false;
+        }
+        if (hooks && hooks.onBeforeNavigate) {
+          hooks.onBeforeNavigate(check.normalized);
+        }
+        try {
+          window.location.assign(check.normalized);
+        } catch (err) {
+          if (hooks && hooks.onError) {
+            hooks.onError("Automatic navigation was blocked by the browser. Use the direct link below.");
+          }
+        }
+        return true;
+      }
+
+      return {
+        execute
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: EditPanel
+       ====================================================================== */
+    const EditPanel = (function () {
+      let isOpen = false;
+      let isDirty = false;
+      let lastFocusedEl = null;
+      let getSettingsFn = null;
+      let applyPreviewFn = null;
+      let commitSaveFn = null;
+      let resetAllFn = null;
+      let onCloseFn = null;
+      let onTestCountdownFn = null;
+
+      const backdrop = document.getElementById("edit-backdrop");
+      const panel = document.getElementById("edit-panel");
+      const gearBtn = document.getElementById("settings-gear");
+      const closeBtn = document.getElementById("edit-close-btn");
+      const exitBtn = document.getElementById("exit-edit-btn");
+      const saveBtn = document.getElementById("save-settings-btn");
+      const resetFooterBtn = document.getElementById("reset-settings-footer-btn");
+      const confirmBar = document.getElementById("edit-confirm-bar");
+      const confirmMsg = document.getElementById("edit-confirm-msg");
+      const confirmDiscardBtn = document.getElementById("confirm-discard-btn");
+      const confirmSaveBtn = document.getElementById("confirm-save-btn");
+      const confirmStayBtn = document.getElementById("confirm-stay-btn");
+
+      let pendingConfirmMode = null; // 'close' | 'reset'
+      let draftSettings = null;
+      let savedSnapshot = null;
+
+      /**
+       * Switches active tab in Edit Mode using ARIA selected and hidden panes.
+       * @param {string} tabId - Tab identifier ('bg'|'tg'|'content'|'style'|'anim'|'data').
+       * @returns {void}
+       */
+      function switchTab(tabId) {
+        const tabs = panel.querySelectorAll(".edit-tab");
+        const panes = panel.querySelectorAll(".tab-pane");
+        tabs.forEach((btn) => {
+          const active = btn.getAttribute("data-tab") === tabId;
+          btn.setAttribute("aria-selected", active ? "true" : "false");
+          btn.classList.toggle("is-active", active);
+        });
+        panes.forEach((pane) => {
+          pane.hidden = pane.id !== "pane-" + tabId;
+        });
+      }
+
+      /**
+       * Populates all Edit Panel controls from the current draft settings object.
+       * @param {object} s - Settings object.
+       * @returns {void}
+       */
+      function syncControlsFromSettings(s) {
+        // Background sliders
+        setRange("slider-bg-zoom", "val-bg-zoom", s.background.zoom, "%");
+        setRange("slider-bg-x", "val-bg-x", s.background.posX, "%");
+        setRange("slider-bg-y", "val-bg-y", s.background.posY, "%");
+        setRange("slider-bg-brightness", "val-bg-brightness", s.background.brightness, "%");
+        setRange("slider-bg-blur", "val-bg-blur", s.background.blur, "px");
+        setRange("slider-bg-overlay", "val-bg-overlay", s.background.overlayOpacity, "%");
+
+        // Telegram tab
+        const urlInput = document.getElementById("input-tg-url");
+        urlInput.value = s.telegramUrl;
+        updateUrlValidationUI(s.telegramUrl);
+
+        const btnTextInput = document.getElementById("input-btn-text");
+        btnTextInput.value = s.buttonText;
+        document.getElementById("val-btn-text-len").textContent = s.buttonText.length + "/40";
+
+        document.getElementById("input-btn-color").value = s.buttonColor;
+        panel.querySelectorAll("#btn-size-group .seg-btn").forEach((b) => {
+          b.setAttribute("aria-pressed", b.getAttribute("data-size") === s.buttonSize ? "true" : "false");
+        });
+
+        document.getElementById("toggle-auto-redirect").checked = s.autoRedirect;
+        panel.querySelectorAll("#countdown-group .seg-btn").forEach((b) => {
+          b.setAttribute("aria-pressed", Number(b.getAttribute("data-sec")) === s.countdown ? "true" : "false");
+        });
+
+        // Content tab
+        const hIn = document.getElementById("input-heading");
+        hIn.value = s.heading;
+        document.getElementById("val-heading-len").textContent = s.heading.length + "/60";
+
+        const subIn = document.getElementById("input-subtitle");
+        subIn.value = s.subtitle;
+        document.getElementById("val-subtitle-len").textContent = s.subtitle.length + "/140";
+
+        const conIn = document.getElementById("input-consent");
+        conIn.value = s.consentText;
+        document.getElementById("val-consent-len").textContent = s.consentText.length + "/200";
+
+        // Style tab
+        document.getElementById("input-neon-color").value = s.style.neonColor;
+        document.getElementById("val-neon-color").textContent = s.style.neonColor;
+        document.getElementById("input-btn-text-color").value = s.buttonTextColor;
+        document.getElementById("val-btn-text-color").textContent = s.buttonTextColor;
+        setRange("slider-card-blur", "val-card-blur", s.style.cardBlur, "px");
+        setRange("slider-card-opacity", "val-card-opacity", s.style.cardOpacity, "%");
+
+        // Animation tab
+        document.getElementById("toggle-anim-master").checked = s.animations.master;
+        document.getElementById("toggle-anim-matrix").checked = s.animations.matrix;
+        document.getElementById("toggle-anim-particles").checked = s.animations.particles;
+        document.getElementById("toggle-anim-cards").checked = s.animations.cards;
+        document.getElementById("toggle-anim-scanline").checked = s.animations.scanline;
+        document.getElementById("toggle-anim-perf").checked = s.animations.performanceMode;
+
+        // Data tab PIN indicator
+        document.getElementById("pin-status-label").textContent = s.pinAuth ? "PIN Enabled" : "Not set";
+      }
+
+      /**
+       * Helper to set a range slider and its numeric readout.
+       * @param {string} id - Slider element ID.
+       * @param {string} valId - Readout element ID.
+       * @param {number} val - Numeric value.
+       * @param {string} unit - Display unit suffix.
+       * @returns {void}
+       */
+      function setRange(id, valId, val, unit) {
+        document.getElementById(id).value = String(val);
+        document.getElementById(valId).textContent = String(val) + unit;
+      }
+
+      /**
+       * Updates live URL validation feedback and test link target.
+       * @param {string} urlStr - Candidate URL string.
+       * @returns {{valid: boolean, normalized: string}} Validation result.
+       */
+      function updateUrlValidationUI(urlStr) {
+        const res = Validators.validateTelegramUrl(urlStr);
+        const statusEl = document.getElementById("tg-url-status");
+        const testLink = document.getElementById("test-link-btn");
+        const previewBox = document.getElementById("preview-url-box");
+        statusEl.classList.remove("is-valid", "is-error");
+        if (res.valid) {
+          statusEl.classList.add("is-valid");
+          statusEl.textContent = res.isExample
+            ? "Valid syntax (example placeholder — replace with your real channel)."
+            : "Valid verified Telegram link: " + res.normalized;
+          testLink.href = res.normalized;
+          previewBox.textContent = "Normalized destination: " + res.normalized;
+        } else {
+          statusEl.classList.add("is-error");
+          statusEl.textContent = res.error;
+          previewBox.textContent = "Invalid destination — fix URL before saving.";
+        }
+        return res;
+      }
+
+      /**
+       * Marks settings as dirty and triggers live preview.
+       * @returns {void}
+       */
+      function markDirtyAndPreview() {
+        isDirty = true;
+        if (applyPreviewFn) applyPreviewFn(draftSettings);
+      }
+
+      /**
+       * Opens Edit Mode drawer/sheet and traps keyboard focus.
+       * @param {object} currentSettings - Current committed settings.
+       * @returns {void}
+       */
+      function open(currentSettings) {
+        if (isOpen) return;
+        lastFocusedEl = document.activeElement;
+        savedSnapshot = JSON.parse(JSON.stringify(currentSettings));
+        draftSettings = JSON.parse(JSON.stringify(currentSettings));
+        isDirty = false;
+        confirmBar.hidden = true;
+        pendingConfirmMode = null;
+
+        syncControlsFromSettings(draftSettings);
+        backdrop.hidden = false;
+        isOpen = true;
+        gearBtn.setAttribute("aria-expanded", "true");
+        closeBtn.focus();
+      }
+
+      /**
+       * Forces immediate closure without prompt.
+       * @param {boolean} runCountdownPreview - Whether to restart countdown after closing.
+       * @returns {void}
+       */
+      function forceClose(runCountdownPreview) {
+        if (!isOpen) return;
+        backdrop.hidden = true;
+        isOpen = false;
+        isDirty = false;
+        confirmBar.hidden = true;
+        gearBtn.setAttribute("aria-expanded", "false");
+        if (lastFocusedEl && typeof lastFocusedEl.focus === "function") {
+          lastFocusedEl.focus();
+        }
+        if (onCloseFn) onCloseFn(Boolean(runCountdownPreview));
+      }
+
+      /**
+       * Handles Exit/Close request, checking for unsaved changes first.
+       * @returns {void}
+       */
+      function requestClose() {
+        if (isDirty) {
+          pendingConfirmMode = "close";
+          confirmMsg.textContent = "You have unsaved changes. Save or discard before exiting?";
+          confirmDiscardBtn.textContent = "Discard";
+          confirmSaveBtn.hidden = false;
+          confirmBar.hidden = false;
+          confirmSaveBtn.focus();
+          return;
+        }
+        forceClose(false);
+      }
+
+      /**
+       * Saves draft settings after validating Telegram URL.
+       * @returns {boolean} True if saved successfully.
+       */
+      function handleSave() {
+        const urlCheck = Validators.validateTelegramUrl(document.getElementById("input-tg-url").value);
+        if (!urlCheck.valid) {
+          switchTab("tg");
+          showToast("Cannot save: " + urlCheck.error, true);
+          document.getElementById("input-tg-url").focus();
+          return false;
+        }
+        draftSettings.telegramUrl = urlCheck.normalized;
+        const clean = Validators.migrateSettings(draftSettings, false);
+        draftSettings = JSON.parse(JSON.stringify(clean));
+        savedSnapshot = JSON.parse(JSON.stringify(clean));
+        isDirty = false;
+        confirmBar.hidden = true;
+        if (commitSaveFn) commitSaveFn(clean);
+        showToast("Settings saved locally.", false);
+        return true;
+      }
+
+      /**
+       * Binds all DOM events inside Edit Panel once on initialization.
+       * @param {object} handlers - App integration callbacks.
+       * @returns {void}
+       */
+      function init(handlers) {
+        getSettingsFn = handlers.getSettings;
+        applyPreviewFn = handlers.applyPreview;
+        commitSaveFn = handlers.commitSave;
+        resetAllFn = handlers.resetAll;
+        onCloseFn = handlers.onClose;
+        onTestCountdownFn = handlers.onTestCountdown;
+
+        // Build 6 neon color preset buttons
+        const presetsWrap = document.getElementById("btn-color-presets");
+        NEON_PRESETS.forEach((hex) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "preset-swatch";
+          btn.setAttribute("aria-label", "Select color " + hex);
+          const dot = document.createElement("span");
+          dot.className = "preset-swatch-dot";
+          dot.style.backgroundColor = hex;
+          btn.appendChild(dot);
+          btn.addEventListener("click", () => {
+            draftSettings.buttonColor = hex;
+            document.getElementById("input-btn-color").value = hex;
+            markDirtyAndPreview();
+          });
+          presetsWrap.appendChild(btn);
+        });
+
+        // Tabs
+        panel.querySelectorAll(".edit-tab").forEach((tab) => {
+          tab.addEventListener("click", () => switchTab(tab.getAttribute("data-tab")));
+        });
+
+        // Close & Exit
+        closeBtn.addEventListener("click", requestClose);
+        exitBtn.addEventListener("click", requestClose);
+        backdrop.addEventListener("click", (e) => {
+          if (e.target === backdrop) requestClose();
+        });
+
+        saveBtn.addEventListener("click", () => {
+          handleSave();
+        });
+
+        resetFooterBtn.addEventListener("click", () => {
+          pendingConfirmMode = "reset";
+          confirmMsg.textContent = "Reset all settings and remove uploaded images?";
+          confirmDiscardBtn.textContent = "Confirm Reset";
+          confirmSaveBtn.hidden = true;
+          confirmBar.hidden = false;
+          confirmDiscardBtn.focus();
+        });
+
+        document.getElementById("reset-all-btn").addEventListener("click", () => {
+          pendingConfirmMode = "reset";
+          confirmMsg.textContent = "Reset all settings and remove uploaded images?";
+          confirmDiscardBtn.textContent = "Confirm Reset";
+          confirmSaveBtn.hidden = true;
+          confirmBar.hidden = false;
+          confirmDiscardBtn.focus();
+        });
+
+        confirmDiscardBtn.addEventListener("click", async () => {
+          if (pendingConfirmMode === "reset") {
+            confirmBar.hidden = true;
+            if (resetAllFn) await resetAllFn();
+            draftSettings = JSON.parse(JSON.stringify(getSettingsFn()));
+            savedSnapshot = JSON.parse(JSON.stringify(draftSettings));
+            isDirty = false;
+            syncControlsFromSettings(draftSettings);
+            showToast("All settings reset to defaults.", false);
+          } else {
+            // Discard unsaved edits and restore snapshot
+            if (applyPreviewFn && savedSnapshot) applyPreviewFn(savedSnapshot);
+            forceClose(false);
+          }
+        });
+
+        confirmSaveBtn.addEventListener("click", () => {
+          if (handleSave()) {
+            forceClose(false);
+          }
+        });
+
+        confirmStayBtn.addEventListener("click", () => {
+          confirmBar.hidden = true;
+          pendingConfirmMode = null;
+        });
+
+        // Focus trap & Escape handler
+        document.addEventListener("keydown", (e) => {
+          if (!isOpen) return;
+          if (e.key === "Escape") {
+            e.preventDefault();
+            requestClose();
+            return;
+          }
+          if (e.key === "Tab") {
+            const focusables = Array.from(
+              panel.querySelectorAll('button:not([hidden]):not(:disabled), input:not([hidden]):not(:disabled), textarea:not([hidden]):not(:disabled), a[href]:not([hidden])')
+            ).filter((el) => el.offsetParent !== null);
+            if (focusables.length === 0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        });
+
+        // Background sliders
+        const bindRange = (id, valId, unit, setter) => {
+          document.getElementById(id).addEventListener("input", (e) => {
+            const num = Number(e.target.value);
+            document.getElementById(valId).textContent = num + unit;
+            setter(num);
+            markDirtyAndPreview();
+          });
+        };
+
+        bindRange("slider-bg-zoom", "val-bg-zoom", "%", (v) => { draftSettings.background.zoom = v; });
+        bindRange("slider-bg-x", "val-bg-x", "%", (v) => { draftSettings.background.posX = v; });
+        bindRange("slider-bg-y", "val-bg-y", "%", (v) => { draftSettings.background.posY = v; });
+        bindRange("slider-bg-brightness", "val-bg-brightness", "%", (v) => { draftSettings.background.brightness = v; });
+        bindRange("slider-bg-blur", "val-bg-blur", "px", (v) => { draftSettings.background.blur = v; });
+        bindRange("slider-bg-overlay", "val-bg-overlay", "%", (v) => { draftSettings.background.overlayOpacity = v; });
+
+        // Background file upload & drag-drop
+        const bgInput = document.getElementById("bg-file-input");
+        const dropzone = document.getElementById("bg-dropzone");
+
+        async function handleBgFile(file) {
+          if (!file) return;
+          try {
+            const blob = await ImageTools.processImage(file, { maxSide: 2560, squareCrop: false });
+            Background.applyBackground(draftSettings.background, blob);
+            await Storage.saveImageBlob("background", blob);
+            showToast("Background updated.", false);
+          } catch (err) {
+            showToast(err.message || "Failed to process image.", true);
+          }
+        }
+
+        document.getElementById("bg-upload-btn").addEventListener("click", () => bgInput.click());
+        document.getElementById("bg-replace-btn").addEventListener("click", () => bgInput.click());
+        bgInput.addEventListener("change", (e) => {
+          handleBgFile(e.target.files[0]);
+          bgInput.value = "";
+        });
+
+        dropzone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropzone.classList.add("is-dragover");
+        });
+        dropzone.addEventListener("dragleave", () => dropzone.classList.remove("is-dragover"));
+        dropzone.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropzone.classList.remove("is-dragover");
+          if (e.dataTransfer && e.dataTransfer.files[0]) {
+            handleBgFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        document.getElementById("bg-reset-adj-btn").addEventListener("click", () => {
+          draftSettings.background = getDefaultSettings(false).background;
+          syncControlsFromSettings(draftSettings);
+          markDirtyAndPreview();
+          showToast("Background adjustments reset.", false);
+        });
+
+        document.getElementById("bg-remove-btn").addEventListener("click", async () => {
+          await Storage.deleteImageBlob("background");
+          Background.applyBackground(draftSettings.background, null);
+          showToast("Background image removed.", false);
+        });
+
+        // Telegram tab controls
+        document.getElementById("input-tg-url").addEventListener("input", (e) => {
+          const check = updateUrlValidationUI(e.target.value);
+          if (check.valid) {
+            draftSettings.telegramUrl = check.normalized;
+            markDirtyAndPreview();
+          } else {
+            isDirty = true;
+          }
+        });
+
+        document.getElementById("preview-dest-btn").addEventListener("click", () => {
+          updateUrlValidationUI(document.getElementById("input-tg-url").value);
+          const box = document.getElementById("preview-url-box");
+          box.hidden = !box.hidden;
+        });
+
+        document.getElementById("input-btn-text").addEventListener("input", (e) => {
+          const val = e.target.value.slice(0, 40);
+          document.getElementById("val-btn-text-len").textContent = val.length + "/40";
+          draftSettings.buttonText = val || "Join Telegram Channel";
+          markDirtyAndPreview();
+        });
+
+        document.getElementById("input-btn-color").addEventListener("input", (e) => {
+          draftSettings.buttonColor = e.target.value;
+          markDirtyAndPreview();
+        });
+
+        panel.querySelectorAll("#btn-size-group .seg-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            draftSettings.buttonSize = btn.getAttribute("data-size");
+            panel.querySelectorAll("#btn-size-group .seg-btn").forEach((b) => {
+              b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+            });
+            markDirtyAndPreview();
+          });
+        });
+
+        document.getElementById("toggle-auto-redirect").addEventListener("change", (e) => {
+          draftSettings.autoRedirect = e.target.checked;
+          markDirtyAndPreview();
+        });
+
+        panel.querySelectorAll("#countdown-group .seg-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            draftSettings.countdown = Number(btn.getAttribute("data-sec"));
+            panel.querySelectorAll("#countdown-group .seg-btn").forEach((b) => {
+              b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+            });
+            markDirtyAndPreview();
+          });
+        });
+
+        document.getElementById("test-countdown-btn").addEventListener("click", () => {
+          if (handleSave()) {
+            forceClose(true);
+            if (onTestCountdownFn) onTestCountdownFn();
+          }
+        });
+
+        // Content tab controls
+        document.getElementById("input-heading").addEventListener("input", (e) => {
+          const val = e.target.value.slice(0, 60);
+          document.getElementById("val-heading-len").textContent = val.length + "/60";
+          draftSettings.heading = val || getDefaultSettings(false).heading;
+          markDirtyAndPreview();
+        });
+
+        document.getElementById("input-subtitle").addEventListener("input", (e) => {
+          const val = e.target.value.slice(0, 140);
+          document.getElementById("val-subtitle-len").textContent = val.length + "/140";
+          draftSettings.subtitle = val || getDefaultSettings(false).subtitle;
+          markDirtyAndPreview();
+        });
+
+        document.getElementById("input-consent").addEventListener("input", (e) => {
+          const val = e.target.value.slice(0, 200);
+          document.getElementById("val-consent-len").textContent = val.length + "/200";
+          draftSettings.consentText = val || getDefaultSettings(false).consentText;
+          markDirtyAndPreview();
+        });
+
+        const logoInput = document.getElementById("logo-file-input");
+        document.getElementById("logo-upload-btn").addEventListener("click", () => logoInput.click());
+        logoInput.addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          logoInput.value = "";
+          if (!file) return;
+          try {
+            const blob = await ImageTools.processImage(file, { maxSide: 512, squareCrop: true });
+            Background.applyLogo(blob);
+            await Storage.saveImageBlob("logo", blob);
+            showToast("Logo updated.", false);
+          } catch (err) {
+            showToast(err.message || "Failed to process logo.", true);
+          }
+        });
+
+        document.getElementById("logo-remove-btn").addEventListener("click", async () => {
+          await Storage.deleteImageBlob("logo");
+          Background.applyLogo(null);
+          showToast("Logo restored to default emblem.", false);
+        });
+
+        // Style tab controls
+        document.getElementById("input-neon-color").addEventListener("input", (e) => {
+          const hex = e.target.value.toUpperCase();
+          document.getElementById("val-neon-color").textContent = hex;
+          draftSettings.style.neonColor = hex;
+          markDirtyAndPreview();
+        });
+
+        document.getElementById("input-btn-text-color").addEventListener("input", (e) => {
+          const hex = e.target.value.toUpperCase();
+          document.getElementById("val-btn-text-color").textContent = hex;
+          draftSettings.buttonTextColor = hex;
+          markDirtyAndPreview();
+        });
+
+        bindRange("slider-card-blur", "val-card-blur", "px", (v) => { draftSettings.style.cardBlur = v; });
+        bindRange("slider-card-opacity", "val-card-opacity", "%", (v) => { draftSettings.style.cardOpacity = v; });
+
+        // Animation tab controls
+        document.getElementById("toggle-anim-master").addEventListener("change", (e) => {
+          draftSettings.animations.master = e.target.checked;
+          markDirtyAndPreview();
+        });
+        document.getElementById("toggle-anim-matrix").addEventListener("change", (e) => {
+          draftSettings.animations.matrix = e.target.checked;
+          markDirtyAndPreview();
+        });
+        document.getElementById("toggle-anim-particles").addEventListener("change", (e) => {
+          draftSettings.animations.particles = e.target.checked;
+          markDirtyAndPreview();
+        });
+        document.getElementById("toggle-anim-cards").addEventListener("change", (e) => {
+          draftSettings.animations.cards = e.target.checked;
+          markDirtyAndPreview();
+        });
+        document.getElementById("toggle-anim-scanline").addEventListener("change", (e) => {
+          draftSettings.animations.scanline = e.target.checked;
+          markDirtyAndPreview();
+        });
+        document.getElementById("toggle-anim-perf").addEventListener("change", (e) => {
+          draftSettings.animations.performanceMode = e.target.checked;
+          markDirtyAndPreview();
+        });
+
+        // Data tab: Export / Import / PIN
+        document.getElementById("export-settings-btn").addEventListener("click", () => {
+          const exportObj = Validators.migrateSettings(draftSettings, false);
+          const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "cyber-landing-settings.json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast("Settings exported.", false);
+        });
+
+        const importInput = document.getElementById("import-file-input");
+        document.getElementById("import-settings-btn").addEventListener("click", () => importInput.click());
+        importInput.addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          importInput.value = "";
+          if (!file) return;
+          if (file.size > 512 * 1024) {
+            showToast("Settings JSON file is too large.", true);
+            return;
+          }
+          try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            const clean = Validators.migrateSettings(parsed, false);
+            draftSettings = clean;
+            syncControlsFromSettings(draftSettings);
+            markDirtyAndPreview();
+            showToast("Settings imported. Click Save Settings to persist.", false);
+          } catch (err) {
+            showToast("Invalid JSON settings file.", true);
+          }
+        });
+
+        document.getElementById("set-pin-btn").addEventListener("click", async () => {
+          const pinInput = document.getElementById("input-pin-new");
+          const pinVal = pinInput.value.trim();
+          if (pinVal.length < 4) {
+            showToast("PIN must be at least 4 characters.", true);
+            return;
+          }
+          try {
+            const salt = Storage.createSaltHex();
+            const hash = await Storage.hashPin(pinVal, salt);
+            draftSettings.pinAuth = { salt, hash };
+            pinInput.value = "";
+            document.getElementById("pin-status-label").textContent = "PIN Enabled";
+            markDirtyAndPreview();
+            showToast("PIN configured. Click Save Settings to lock Edit Mode.", false);
+          } catch (err) {
+            showToast("Web Crypto unavailable for PIN hashing.", true);
+          }
+        });
+
+        document.getElementById("clear-pin-btn").addEventListener("click", () => {
+          draftSettings.pinAuth = null;
+          document.getElementById("pin-status-label").textContent = "Not set";
+          markDirtyAndPreview();
+          showToast("PIN removed. Click Save Settings to apply.", false);
+        });
+      }
+
+      return {
+        init,
+        open,
+        isPanelOpen: () => isOpen
+      };
+    })();
+
+    /* ======================================================================
+       MODULE: App
+       ====================================================================== */
+    /**
+     * Displays a transient accessible toast notification.
+     * @param {string} message - Plain text notification message.
+     * @param {boolean} isError - True for error styling.
+     * @returns {void}
+     */
+    function showToast(message, isError) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = isError ? "toast is-error" : "toast";
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 4000);
+    }
+
+    const App = (function () {
+      const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let settings = Storage.loadSettings(reducedMotion);
+      let state = "BOOT"; // BOOT | COUNTING | PAUSED | REDIRECTING | DISABLED | EDITING
+      let rafId = null;
+      let lastFrameTime = 0;
+      let resizeTimer = null;
+
+      /**
+       * Converts a hex color to "r, g, b" string for CSS rgba() variables.
+       * @param {string} hex - 6-digit hex color.
+       * @returns {string} Comma-separated RGB integers.
+       */
+      function hexToRgbTuple(hex) {
+        const clean = hex.replace("#", "");
+        const r = parseInt(clean.slice(0, 2), 16) || 0;
+        const g = parseInt(clean.slice(2, 4), 16) || 255;
+        const b = parseInt(clean.slice(4, 6), 16) || 117;
+        return r + ", " + g + ", " + b;
+      }
+
+      /**
+       * Sets the application state attribute on document.body.
+       * @param {string} nextState - New state name.
+       * @returns {void}
+       */
+      function setState(nextState) {
+        state = nextState;
+        document.body.setAttribute("data-state", nextState);
+      }
+
+      /**
+       * Applies visual settings, theme tokens, content, and animation toggles to the DOM.
+       * @param {object} s - Settings object to render.
+       * @returns {void}
+       */
+      function applySettingsToUI(s) {
+        const root = document.documentElement;
+        const neon = s.style.neonColor;
+        const rgb = hexToRgbTuple(neon);
+        root.style.setProperty("--neon", neon);
+        root.style.setProperty("--neon-rgb", rgb);
+        root.style.setProperty("--border", "rgba(" + rgb + ", 0.35)");
+        root.style.setProperty("--glow", "0 0 18px rgba(" + rgb + ", 0.45)");
+        root.style.setProperty("--btn-bg", s.buttonColor);
+        root.style.setProperty("--btn-text", s.buttonTextColor);
+        root.style.setProperty("--blur", s.style.cardBlur + "px");
+        root.style.setProperty("--panel", "rgba(18, 22, 20, " + (s.style.cardOpacity / 100).toFixed(2) + ")");
+
+        // Content
+        document.getElementById("main-heading").textContent = s.heading;
+        document.getElementById("main-subtitle").textContent = s.subtitle;
+        document.getElementById("join-btn-label").textContent = s.buttonText;
+        document.getElementById("disclosure-url-text").textContent = s.telegramUrl;
+        document.getElementById("fallback-link").href = s.telegramUrl;
+        document.getElementById("fallback-link").textContent = s.telegramUrl;
+        document.getElementById("consent-text").textContent = s.consentText;
+        document.getElementById("example-notice").hidden = !Validators.validateTelegramUrl(s.telegramUrl).isExample;
+
+        // Button size
+        const joinBtn = document.getElementById("join-btn");
+        joinBtn.classList.remove("size-small", "size-medium", "size-large");
+        joinBtn.classList.add("size-" + s.buttonSize);
+
+        // Background adjustments
+        Background.applyBackground(s.background, undefined);
+
+        // Animations & toggles
+        const master = s.animations.master;
+        document.body.classList.toggle("anim-off", !master);
+        document.body.classList.toggle("no-cards", !master || !s.animations.cards);
+        document.body.classList.toggle("no-scanline", !master || !s.animations.scanline);
+
+        const lowEnd =
+          (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4) ||
+          (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4);
+        const perf = s.animations.performanceMode || lowEnd;
+
+        MatrixRain.configure(master && s.animations.matrix, neon);
+        Particles.configure(master && s.animations.particles, perf, neon);
+        Terminal.render(s.telegramUrl, master && state === "BOOT");
+      }
+
+      /**
+       * Single requestAnimationFrame loop driving MatrixRain and Particles canvases.
+       * @param {number} now - High-resolution timestamp.
+       * @returns {void}
+       */
+      function animLoop(now) {
+        rafId = window.requestAnimationFrame(animLoop);
+
+        const smallScreenEditing = EditPanel.isPanelOpen() && window.innerWidth < 768;
+        if (document.hidden || smallScreenEditing || !settings.animations.master) {
+          return;
+        }
+
+        const lowEnd =
+          (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4) ||
+          (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4);
+        const targetFps = settings.animations.performanceMode || lowEnd ? 30 : 60;
+        const minDelta = 1000 / targetFps;
+        if (now - lastFrameTime < minDelta - 1) {
+          return;
+        }
+        lastFrameTime = now;
+
+        MatrixRain.draw(now);
+        Particles.draw(now);
+      }
+
+      /**
+       * Starts or disables the auto-redirect countdown based on settings and URL validity.
+       * @param {boolean} forcePreview - True when triggered via "Test countdown".
+       * @returns {void}
+       */
+      function startRedirectFlow(forcePreview) {
+        const ringWrap = document.getElementById("countdown-ring-wrap");
+        const statusEl = document.getElementById("countdown-status");
+        const liveEl = document.getElementById("countdown-live");
+        const secRow = document.getElementById("secondary-actions");
+        const resumeBtn = document.getElementById("resume-btn");
+        const exampleNotice = document.getElementById("example-notice");
+        const progressEl = document.getElementById("countdown-progress");
+        const numberEl = document.getElementById("countdown-number");
+
+        const urlCheck = Validators.validateTelegramUrl(settings.telegramUrl);
+        exampleNotice.hidden = !urlCheck.isExample;
+        document.getElementById("redirect-fallback").hidden = true;
+        resumeBtn.hidden = true;
+
+        const shouldCount =
+          urlCheck.valid &&
+          (forcePreview || (settings.autoRedirect && !urlCheck.isExample));
+
+        if (!shouldCount) {
+          setState("DISABLED");
+          ringWrap.hidden = true;
+          secRow.hidden = true;
+          statusEl.textContent = "Tap the button to open Telegram";
+          return;
+        }
+
+        setState("COUNTING");
+        ringWrap.hidden = false;
+        secRow.hidden = false;
+        progressEl.style.strokeDasharray = String(Countdown.CIRCUMFERENCE.toFixed(2));
+
+        Countdown.start(settings.countdown, {
+          onUpdate(display) {
+            numberEl.textContent = String(display.secondsLeft);
+            progressEl.style.strokeDashoffset = display.offset.toFixed(2);
+            statusEl.textContent =
+              "Opening Telegram in " + display.secondsLeft + (display.secondsLeft === 1 ? " second" : " seconds");
+          },
+          onAnnounce(msg) {
+            liveEl.textContent = msg;
+          },
+          onComplete() {
+            triggerRedirect();
+          }
+        });
+      }
+
+      /**
+       * Performs final URL validation and opens the Telegram destination.
+       * @returns {void}
+       */
+      function triggerRedirect() {
+        Countdown.stop();
+        setState("REDIRECTING");
+        document.getElementById("secondary-actions").hidden = true;
+        document.getElementById("resume-btn").hidden = true;
+
+        Redirect.execute(settings.telegramUrl, {
+          onBeforeNavigate(normalizedUrl) {
+            document.getElementById("countdown-status").textContent = "Opening Telegram...";
+            document.getElementById("fallback-link").href = normalizedUrl;
+            document.getElementById("fallback-link").textContent = normalizedUrl;
+            document.getElementById("redirect-fallback").hidden = false;
+          },
+          onError(errMsg) {
+            setState("DISABLED");
+            document.getElementById("countdown-ring-wrap").hidden = true;
+            document.getElementById("countdown-status").textContent = errMsg;
+            document.getElementById("redirect-fallback").hidden = false;
+            showToast(errMsg, true);
+          }
+        });
+      }
+
+      /**
+       * Cancels auto-redirect and shows the paused state.
+       * @returns {void}
+       */
+      function cancelRedirect() {
+        Countdown.stop();
+        setState("PAUSED");
+        document.getElementById("countdown-ring-wrap").hidden = true;
+        document.getElementById("secondary-actions").hidden = true;
+        document.getElementById("resume-btn").hidden = false;
+        document.getElementById("countdown-status").textContent = "Auto-redirect cancelled";
+        document.getElementById("countdown-live").textContent = "Auto-redirect cancelled.";
+      }
+
+      /**
+       * Adds ripple feedback on button tap.
+       * @param {MouseEvent} e - Click event.
+       * @returns {void}
+       */
+      function handleButtonRipple(e) {
+        if (!settings.animations.master) return;
+        const btn = e.currentTarget;
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const ripple = document.createElement("span");
+        ripple.className = "btn-ripple";
+        ripple.style.width = size + "px";
+        ripple.style.height = size + "px";
+        ripple.style.left = (e.clientX - rect.left - size / 2) + "px";
+        ripple.style.top = (e.clientY - rect.top - size / 2) + "px";
+        btn.appendChild(ripple);
+        ripple.addEventListener("animationend", () => ripple.remove());
+      }
+
+      /**
+       * Attaches subtle desktop-only 3D tilt pointer tracking to fictional decorative cards.
+       * @returns {void}
+       */
+      function setupDesktopCardTilt() {
+        if (!window.matchMedia || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+          return;
+        }
+        const cards = document.querySelectorAll("[data-tilt-card]");
+        window.addEventListener("mousemove", (e) => {
+          if (!settings.animations.master || !settings.animations.cards) return;
+          const nx = (e.clientX / window.innerWidth - 0.5) * 14;
+          const ny = (e.clientY / window.innerHeight - 0.5) * -14;
+          cards.forEach((card, idx) => {
+            const factor = idx === 1 ? -1 : 1;
+            card.style.marginLeft = (nx * factor).toFixed(1) + "px";
+            card.style.marginTop = (ny * factor).toFixed(1) + "px";
+          });
+        }, { passive: true });
+      }
+
+      /**
+       * Handles PIN gate before opening Edit Mode if an owner PIN is set.
+       * @returns {void}
+       */
+      function requestOpenEditMode() {
+        Countdown.stop();
+        setState("EDITING");
+
+        if (!settings.pinAuth) {
+          EditPanel.open(settings);
+          return;
+        }
+
+        const pinBackdrop = document.getElementById("pin-backdrop");
+        const pinInput = document.getElementById("pin-unlock-input");
+        const pinErr = document.getElementById("pin-unlock-error");
+        pinInput.value = "";
+        pinErr.hidden = true;
+        pinBackdrop.hidden = false;
+        pinInput.focus();
+      }
+
+      /**
+       * Initializes the entire application on DOM ready.
+       * @returns {Promise<void>}
+       */
+      async function bootstrap() {
+        applySettingsToUI(settings);
+
+        // Load custom images from IndexedDB
+        const [bgBlob, logoBlob] = await Promise.all([
+          Storage.loadImageBlob("background"),
+          Storage.loadImageBlob("logo")
+        ]);
+        if (bgBlob) Background.applyBackground(settings.background, bgBlob);
+        if (logoBlob) Background.applyLogo(logoBlob);
+
+        MatrixRain.resize();
+        Particles.resize();
+        rafId = window.requestAnimationFrame(animLoop);
+
+        // Debounced resize
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            MatrixRain.resize();
+            Particles.resize();
+          }, 150);
+        });
+
+        // Visibility pause/resume for countdown
+        document.addEventListener("visibilitychange", () => {
+          if (state === "COUNTING") {
+            if (document.hidden) Countdown.pause();
+            else Countdown.resume();
+          }
+        });
+
+        // Landing button events
+        document.querySelectorAll(".btn").forEach((btn) => {
+          btn.addEventListener("click", handleButtonRipple);
+        });
+
+        document.getElementById("join-btn").addEventListener("click", triggerRedirect);
+        document.getElementById("skip-btn").addEventListener("click", triggerRedirect);
+        document.getElementById("cancel-btn").addEventListener("click", cancelRedirect);
+        document.getElementById("resume-btn").addEventListener("click", () => startRedirectFlow(true));
+
+        document.getElementById("copy-url-btn").addEventListener("click", async () => {
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(settings.telegramUrl);
+              showToast("Telegram URL copied to clipboard.", false);
+            } else {
+              showToast("Clipboard unavailable; copy the URL manually.", true);
+            }
+          } catch (err) {
+            showToast("Could not copy URL automatically.", true);
+          }
+        });
+
+        document.getElementById("settings-gear").addEventListener("click", requestOpenEditMode);
+
+        // PIN dialog handlers
+        document.getElementById("pin-unlock-cancel").addEventListener("click", () => {
+          document.getElementById("pin-backdrop").hidden = true;
+          startRedirectFlow(false);
+        });
+
+        document.getElementById("pin-unlock-submit").addEventListener("click", async () => {
+          const pinVal = document.getElementById("pin-unlock-input").value.trim();
+          const pinErr = document.getElementById("pin-unlock-error");
+          if (!settings.pinAuth) {
+            document.getElementById("pin-backdrop").hidden = true;
+            EditPanel.open(settings);
+            return;
+          }
+          try {
+            const candidateHash = await Storage.hashPin(pinVal, settings.pinAuth.salt);
+            if (candidateHash === settings.pinAuth.hash) {
+              document.getElementById("pin-backdrop").hidden = true;
+              EditPanel.open(settings);
+            } else {
+              pinErr.textContent = "Incorrect PIN.";
+              pinErr.hidden = false;
+            }
+          } catch (err) {
+            pinErr.textContent = "Crypto verification unavailable.";
+            pinErr.hidden = false;
+          }
+        });
+
+        EditPanel.init({
+          getSettings: () => settings,
+          applyPreview: (draft) => {
+            settings = draft;
+            applySettingsToUI(settings);
+          },
+          commitSave: (clean) => {
+            settings = clean;
+            Storage.saveSettings(settings);
+            applySettingsToUI(settings);
+          },
+          resetAll: async () => {
+            Storage.clearSettings();
+            await Storage.deleteImageBlob("background");
+            await Storage.deleteImageBlob("logo");
+            settings = getDefaultSettings(reducedMotion);
+            Background.applyBackground(settings.background, null);
+            Background.applyLogo(null);
+            applySettingsToUI(settings);
+          },
+          onClose: (runCountdownPreview) => {
+            settings = Storage.loadSettings(reducedMotion);
+            applySettingsToUI(settings);
+            if (runCountdownPreview) {
+              startRedirectFlow(true);
+            } else {
+              startRedirectFlow(false);
+            }
+          },
+          onTestCountdown: () => {
+            /* handled in onClose(true) */
+          }
+        });
+
+        setupDesktopCardTilt();
+
+        // Boot transition (700ms unless ?autostart=1 or reduced motion)
+        const bootOverlay = document.getElementById("boot-overlay");
+        const bootFill = document.getElementById("boot-fill");
+        const card = document.getElementById("gateway-card");
+        const heading = document.getElementById("main-heading");
+        const quickBoot = new URLSearchParams(window.location.search).get("autostart") === "1" || !settings.animations.master;
+
+        function finishBoot() {
+          bootOverlay.classList.add("is-done");
+          setTimeout(() => { bootOverlay.hidden = true; }, quickBoot ? 0 : 250);
+          card.classList.add("is-visible");
+          if (settings.animations.master) {
+            heading.classList.add("is-glitching");
+            setTimeout(() => heading.classList.remove("is-glitching"), 620);
+          }
+          Terminal.render(settings.telegramUrl, settings.animations.master);
+          startRedirectFlow(false);
+        }
+
+        if (quickBoot) {
+          bootFill.style.width = "100%";
+          finishBoot();
+        } else {
+          window.requestAnimationFrame(() => {
+            bootFill.style.width = "100%";
+          });
+          setTimeout(finishBoot, 700);
+        }
+      }
+
+      return {
+        bootstrap
+      };
+    })();
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", App.bootstrap);
+    } else {
+      App.bootstrap();
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "CyberSec Telegram Gateway",
+  "description": "Privacy-first cybersecurity & legal technology Telegram community landing page with customizable backdrop, terminal boot sequence, and validated countdown redirect.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
