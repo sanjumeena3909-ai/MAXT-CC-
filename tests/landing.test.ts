@@ -89,6 +89,7 @@ function loadIndexModules() {
     Config: {
       DEFAULT_EXAMPLE_URL: string;
       DEFAULT_TELEGRAM_URL: string;
+      DEFAULT_BG_IMAGE: string;
       getDefaultSettings: (reducedMotion: boolean) => Record<string, any>;
     };
     Validators: {
@@ -199,7 +200,13 @@ test('migrateSettings clamps out-of-range values, sanitizes fields, and rejects 
   assert.equal(migrated.style.neonColor, '#123456');
   assert.equal(migrated.style.cardBlur, 0);
   assert.equal(migrated.style.cardOpacity, 20);
+  assert.equal(migrated.background.useDefaultImage, true);
   assert.equal(migrated.pinAuth, null);
+
+  assert.equal(mods.Config.DEFAULT_BG_IMAGE, '/assets/aistudio/all-images-collage-16-tight_da5c7a90.jpg');
+  assert.equal(mods.Config.getDefaultSettings(false).heading, 'Join MAXT CC');
+  const clearedBg = mods.Validators.migrateSettings({ background: { useDefaultImage: false } }, false);
+  assert.equal(clearedBg.background.useDefaultImage, false);
 });
 
 test('ImageTools.detectSignature validates JPEG, PNG, WebP magic bytes and rejects spoofs', () => {

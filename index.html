@@ -1483,7 +1483,7 @@
       <p class="kicker-label">Legal Tech &amp; Cyber Security</p>
 
       <!-- 2. Main Heading -->
-      <h1 id="main-heading" class="main-heading">Join Our Cyber Security Community</h1>
+      <h1 id="main-heading" class="main-heading">Join MAXT CC</h1>
 
       <!-- 3. Subtitle -->
       <p id="main-subtitle" class="main-subtitle">Learn. Share. Secure. Legal tech and cybersecurity discussions on Telegram.</p>
@@ -1927,6 +1927,7 @@
     const DB_STORE = "images";
     const DEFAULT_EXAMPLE_URL = "https://t.me/yourchannel";
     const DEFAULT_TELEGRAM_URL = "https://t.me/igmaxtcc";
+    const DEFAULT_BG_IMAGE = "/assets/aistudio/all-images-collage-16-tight_da5c7a90.jpg";
     const NEON_PRESETS = ["#00FF75", "#00E5FF", "#38BDF8", "#A3FF12", "#FFB800", "#FF3B81"];
 
     /**
@@ -1945,7 +1946,7 @@
         buttonSize: "medium",
         autoRedirect: true,
         countdown: 5,
-        heading: "Join Our Cyber Security Community",
+        heading: "Join MAXT CC",
         subtitle: "Learn. Share. Secure. Legal tech and cybersecurity discussions on Telegram.",
         consentText: "By continuing you will leave this page and open Telegram. This page does not collect your data.",
         style: {
@@ -1954,12 +1955,13 @@
           cardOpacity: 62
         },
         background: {
+          useDefaultImage: true,
           zoom: 100,
           posX: 50,
           posY: 50,
-          brightness: 100,
-          blur: 0,
-          overlayOpacity: 55
+          brightness: 75,
+          blur: 2,
+          overlayOpacity: 68
         },
         animations: {
           master: animOn,
@@ -1979,6 +1981,7 @@
       DB_STORE,
       DEFAULT_EXAMPLE_URL,
       DEFAULT_TELEGRAM_URL,
+      DEFAULT_BG_IMAGE,
       NEON_PRESETS,
       getDefaultSettings
     };
@@ -2159,6 +2162,7 @@
           cardOpacity: clampNumber(st.cardOpacity, 20, 95, def.style.cardOpacity)
         },
         background: {
+          useDefaultImage: typeof bg.useDefaultImage === "boolean" ? bg.useDefaultImage : def.background.useDefaultImage,
           zoom: clampNumber(bg.zoom, 100, 300, def.background.zoom),
           posX: clampNumber(bg.posX, 0, 100, def.background.posX),
           posY: clampNumber(bg.posY, 0, 100, def.background.posY),
@@ -2525,22 +2529,25 @@
       let currentLogoUrl = null;
 
       /**
-       * Applies background image URL (if any) and visual adjustment settings.
+       * Applies background image source (Blob or static path) and visual adjustment settings.
        * @param {object} bgSettings - Background adjustment config.
-       * @param {Blob|null} blob - Optional image blob.
+       * @param {Blob|string|null|undefined} imageSource - Image Blob, static URL string, null to clear, or undefined to preserve current image.
        * @returns {void}
        */
-      function applyBackground(bgSettings, blob) {
+      function applyBackground(bgSettings, imageSource) {
         const bgEl = document.getElementById("bg-layer");
         const overlayEl = document.getElementById("overlay-layer");
 
-        if (blob !== undefined) {
+        if (imageSource !== undefined) {
           if (currentBgUrl) {
             URL.revokeObjectURL(currentBgUrl);
             currentBgUrl = null;
           }
-          if (blob) {
-            currentBgUrl = URL.createObjectURL(blob);
+          if (typeof imageSource === "string" && imageSource.length > 0) {
+            bgEl.style.backgroundImage = 'url("' + imageSource + '")';
+            bgEl.classList.add("has-image");
+          } else if (imageSource) {
+            currentBgUrl = URL.createObjectURL(imageSource);
             bgEl.style.backgroundImage = 'url("' + currentBgUrl + '")';
             bgEl.classList.add("has-image");
           } else {
@@ -3455,7 +3462,9 @@
           if (!file) return;
           try {
             const blob = await ImageTools.processImage(file, { maxSide: 2560, squareCrop: false });
+            draftSettings.background.useDefaultImage = false;
             Background.applyBackground(draftSettings.background, blob);
+            markDirtyAndPreview();
             await Storage.saveImageBlob("background", blob);
             showToast("Background updated.", false);
           } catch (err) {
@@ -3484,16 +3493,20 @@
         });
 
         document.getElementById("bg-reset-adj-btn").addEventListener("click", () => {
+          const keepDefault = draftSettings.background.useDefaultImage;
           draftSettings.background = getDefaultSettings(false).background;
+          draftSettings.background.useDefaultImage = keepDefault;
           syncControlsFromSettings(draftSettings);
           markDirtyAndPreview();
           showToast("Background adjustments reset.", false);
         });
 
         document.getElementById("bg-remove-btn").addEventListener("click", async () => {
-          await Storage.deleteImageBlob("background");
+          draftSettings.background.useDefaultImage = false;
           Background.applyBackground(draftSettings.background, null);
+          markDirtyAndPreview();
           showToast("Background image removed.", false);
+          await Storage.deleteImageBlob("background");
         });
 
         // Telegram tab controls
@@ -4012,12 +4025,18 @@
       async function bootstrap() {
         applySettingsToUI(settings);
 
-        // Load custom images from IndexedDB
+        // Load custom images from IndexedDB, or fall back to built-in default backdrop
         const [bgBlob, logoBlob] = await Promise.all([
           Storage.loadImageBlob("background"),
           Storage.loadImageBlob("logo")
         ]);
-        if (bgBlob) Background.applyBackground(settings.background, bgBlob);
+        if (bgBlob) {
+          Background.applyBackground(settings.background, bgBlob);
+        } else if (settings.background.useDefaultImage) {
+          Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
+        } else {
+          Background.applyBackground(settings.background, null);
+        }
         if (logoBlob) Background.applyLogo(logoBlob);
 
         MatrixRain.resize();
@@ -4111,12 +4130,20 @@
             await Storage.deleteImageBlob("background");
             await Storage.deleteImageBlob("logo");
             settings = getDefaultSettings(reducedMotion);
-            Background.applyBackground(settings.background, null);
+            Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
             Background.applyLogo(null);
             applySettingsToUI(settings);
           },
-          onClose: (runCountdownPreview) => {
+          onClose: async (runCountdownPreview) => {
             settings = Storage.loadSettings(reducedMotion);
+            const savedBg = await Storage.loadImageBlob("background");
+            if (savedBg) {
+              Background.applyBackground(settings.background, savedBg);
+            } else if (settings.background.useDefaultImage) {
+              Background.applyBackground(settings.background, DEFAULT_BG_IMAGE);
+            } else {
+              Background.applyBackground(settings.background, null);
+            }
             applySettingsToUI(settings);
             if (runCountdownPreview) {
               startRedirectFlow(true);
